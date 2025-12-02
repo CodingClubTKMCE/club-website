@@ -4,7 +4,7 @@
     import GlitchText from "$lib/components/ui/GlitchText.svelte";
 </script>
 
-<section class="relative min-h-[90vh] flex items-center pt-20 overflow-hidden">
+<section class="relative min-h-[90vh] flex items-center pt-32 overflow-hidden">
     <!-- Background Elements -->
     <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
         <div
@@ -12,7 +12,7 @@
         ></div>
     </div>
 
-    <div class="container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="container mx-auto px-4 grid lg:grid-cols-2 gap-10 items-center">
         <!-- Text Content -->
         <div class="space-y-8 relative z-10">
             <h1
@@ -34,6 +34,7 @@
 
             <div class="flex flex-wrap gap-4">
                 <Button
+                    href="/login"
                     class="rounded-full px-8 py-6 text-lg bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(139,92,246,0.3)] transition-all duration-300"
                 >
                     Join

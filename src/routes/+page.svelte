@@ -2,7 +2,6 @@
   import Hero from "$lib/components/home/Hero.svelte";
   import VisionMission from "$lib/components/home/VisionMission.svelte";
   import EventsSection from "$lib/components/home/EventsSection.svelte";
-  import TeamSection from "$lib/components/home/TeamSection.svelte";
 </script>
 
 <svelte:head>
@@ -19,5 +18,4 @@
   <Hero />
   <VisionMission />
   <EventsSection />
-  <TeamSection />
 </div>

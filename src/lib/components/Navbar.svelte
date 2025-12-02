@@ -48,7 +48,7 @@
             <img
                 src={logo}
                 alt="Coding Club TKMCE"
-                class="h-10 w-auto md:h-12"
+                class="h-30 w-auto md:auto"
             />
         </a>
 
@@ -78,8 +78,7 @@
         <div class="hidden md:flex items-center gap-4">
             <Button
                 href="/login"
-                variant="ghost"
-                class="text-gray-400 hover:text-white"
+                class="bg-black/50 text-gray-400 hover:text-primary hover:bg-black transition-all duration-300"
             >
                 Login
             </Button>

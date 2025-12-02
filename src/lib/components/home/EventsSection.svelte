@@ -30,7 +30,7 @@
     ];
 </script>
 
-<section class="py-24 bg-black/50 relative">
+<section class="pt-12 pb-24 bg-black/50 relative">
     <div class="container mx-auto px-4">
         <div class="flex items-center justify-between mb-12">
             <div>

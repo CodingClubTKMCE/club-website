@@ -47,7 +47,7 @@
     <title>Events | Coding Club TKMCE</title>
 </svelte:head>
 
-<div class="pt-24 pb-16 container mx-auto px-4">
+<div class="pt-32 pb-16 container mx-auto px-4">
     <!-- Upcoming Events -->
     <section class="mb-20">
         <div class="flex items-center gap-2 mb-8">

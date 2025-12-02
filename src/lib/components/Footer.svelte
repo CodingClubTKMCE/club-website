@@ -9,12 +9,12 @@
     <div class="container mx-auto px-4">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <!-- Brand -->
-            <div class="col-span-1 md:col-span-2 space-y-4">
+            <div class="col-span-1 md:col-span-2 space-y-2">
                 <a href="/" class="block w-fit">
                     <img
                         src={logo}
                         alt="Coding Club TKMCE"
-                        class="h-12 w-auto"
+                        class="h-50 w-auto"
                     />
                 </a>
                 <p class="text-gray-400 max-w-sm leading-relaxed">
@@ -28,7 +28,7 @@
             <div class="space-y-4">
                 <h3 class="text-white font-semibold text-lg">Quick Links</h3>
                 <ul class="space-y-2">
-                    {#each ["Home", "Events", "Team", "Login"] as item}
+                    {#each ["Home", "Events", "Execom", "Login"] as item}
                         <li>
                             <a
                                 href={item === "Home"

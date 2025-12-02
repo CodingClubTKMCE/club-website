@@ -138,6 +138,60 @@
         },
     ];
 
+    const designTeam = [
+        {
+            name: "Design Lead",
+            role: "Head",
+            image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop",
+            linkedin: "#",
+        },
+        {
+            name: "Member 1",
+            role: "Member",
+            image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=400&auto=format&fit=crop",
+            linkedin: "#",
+        },
+        {
+            name: "Member 2",
+            role: "Member",
+            image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
+            linkedin: "#",
+        },
+        {
+            name: "Member 3",
+            role: "Member",
+            image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop",
+            linkedin: "#",
+        },
+    ];
+
+    const technicalTeam = [
+        {
+            name: "Tech Lead",
+            role: "Head",
+            image: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?q=80&w=400&auto=format&fit=crop",
+            linkedin: "#",
+        },
+        {
+            name: "Member 1",
+            role: "Member",
+            image: "https://images.unsplash.com/photo-1463453091185-61582044d556?q=80&w=400&auto=format&fit=crop",
+            linkedin: "#",
+        },
+        {
+            name: "Member 2",
+            role: "Member",
+            image: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=400&auto=format&fit=crop",
+            linkedin: "#",
+        },
+        {
+            name: "Member 3",
+            role: "Member",
+            image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=400&auto=format&fit=crop",
+            linkedin: "#",
+        },
+    ];
+
     let mounted = $state(false);
     onMount(() => {
         mounted = true;
@@ -150,7 +204,7 @@
 
 {#if mounted}
     <div
-        class="pt-24 pb-16 container mx-auto px-4"
+        class="pt-28 pb-16 container mx-auto px-4"
         transition:fade={{ duration: 300 }}
     >
         <!-- Header with CORE text -->
