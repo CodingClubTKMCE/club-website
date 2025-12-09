@@ -123,7 +123,7 @@
       name: "Angelina",
       role: "Design",
       image: "/images/Angelina.png",
-      linkedin: "https://www.linkedin.com/feed/",
+      linkedin: "https://www.linkedin.com/in/angelina-rose-9b312b324",
     },
     {
       name: "Joshua",

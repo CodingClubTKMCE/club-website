@@ -1,10 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-
-  //name branch emailID year password
   import { API_ENDPOINTS } from "$lib/api";
-
   import { Button } from "$lib/components/ui/button/index.js";
+  import z from "zod";
 
   let email = $state("");
   let password = $state("");
@@ -14,6 +12,14 @@
   let year = $state("");
   let error = $state(false);
   let errorMessage = $state("");
+
+  const schema = z.object({
+    email: z.email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+    name: z.string().min(1, "Name is required"),
+    branch: z.string().min(1, "Branch is required"),
+    year: z.string().min(1, "Year is required"),
+  });
 
   const register = async () => {
     if (password !== confirmPassword) {
@@ -25,35 +31,55 @@
       return;
     }
 
+    error = false;
+    errorMessage = "";
     try {
-      const res = await fetch(`${API_ENDPOINTS.REGISTER}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          name,
-          branch,
-          emailID: email,
-          year,
-          password,
-        }),
-      });
+      schema.parse({ email, password, name, branch, year });
+      try {
+        const res = await fetch(`${API_ENDPOINTS.REGISTER}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            name,
+            branch,
+            emailID: email,
+            year,
+            password,
+          }),
+        });
 
-      const responseData = await res.json();
+        const responseData = await res.json();
 
-      if (responseData.message === "Member added!") {
-        goto("/login");
-      } else {
-        errorMessage = responseData.message;
+        if (responseData.message === "Member added!") {
+          goto("/login");
+        } else {
+          errorMessage = responseData.message;
+          error = true;
+          setTimeout(() => {
+            error = false;
+          }, 3000);
+        }
+      } catch (error) {
+        console.error("Registration failed:", error);
         error = true;
+        errorMessage =
+          "An error occurred during registration. Please try again.";
         setTimeout(() => {
           error = false;
         }, 3000);
       }
-    } catch (error) {
-      console.error("Registration failed:", error);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        err.issues;
+        error = true;
+        errorMessage = err.issues[0].message;
+        setTimeout(() => {
+          error = false;
+        }, 3000);
+      }
     }
   };
 </script>
@@ -88,31 +114,46 @@
         </div>
 
         <!-- Branch -->
+        <!-- Branch -->
         <div class="space-y-2">
           <label for="branch" class="text-sm font-medium text-gray-400"
             >Branch</label
           >
-          <input
-            type="text"
-            required
+          <select
             id="branch"
+            required
             bind:value={branch}
             class="w-full bg-[#1a1a1a] border-none rounded-lg py-3 px-4 text-white focus:ring-1 focus:ring-primary transition-all"
-          />
+          >
+            <option value="" disabled selected>Select Branch</option>
+            <option value="ER">ER</option>
+            <option value="AI">AI</option>
+            <option value="CS">CS</option>
+            <option value="EEE">EEE</option>
+            <option value="Mech">Mechanical</option>
+            <option value="Civil">Civil</option>
+            <option value="Chem">Chemical</option>
+          </select>
         </div>
 
-        <!-- Year -->
+        <!-- Year dropdown input -->
+        <!-- Year dropdown -->
         <div class="space-y-2">
           <label for="year" class="text-sm font-medium text-gray-400"
             >Year</label
           >
-          <input
-            required
-            type="text"
-            bind:value={year}
+          <select
             id="year"
+            required
+            bind:value={year}
             class="w-full bg-[#1a1a1a] border-none rounded-lg py-3 px-4 text-white focus:ring-1 focus:ring-primary transition-all"
-          />
+          >
+            <option value="" disabled selected>Select Year</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
         </div>
 
         <!-- Email -->

@@ -1,6 +1,8 @@
 <script>
   //@ts-nocheck
   import { API_ENDPOINTS } from "$lib/api";
+  import { auth } from "$lib/stores/auth";
+  import { onMount } from "svelte";
 
   let userID = "";
   let user = null;
@@ -23,6 +25,8 @@
       console.error("Fetching profile failed:", error);
     }
   };
+
+  onMount(() => fetchProfile());
 
   fetchProfile();
 
@@ -137,6 +141,7 @@
         on:click={() => {
           localStorage.removeItem("token");
           localStorage.removeItem("userID");
+          auth.logout();
           window.location.href = "/";
         }}
         class="px-6 py-2 rounded-full bg-red-600/80 hover:bg-red-600 transition text-sm"

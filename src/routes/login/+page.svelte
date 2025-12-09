@@ -3,37 +3,66 @@
   import { API_ENDPOINTS } from "$lib/api";
 
   import { Button } from "$lib/components/ui/button/index.js";
+  import { auth } from "$lib/stores/auth";
+  import z from "zod";
 
   let email = $state("");
   let password = $state("");
   let error = $state(false);
   let errorMessage = $state("");
 
-  const login = async () => {
-    try {
-      const response = await fetch(`${API_ENDPOINTS.LOGIN}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ emailID: email, password: password }),
-      });
+  const schema = z.object({
+    email: z.email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+  });
 
-      const data = await response.json();
-      if (data.message === "Login successful") {
-        await localStorage.setItem("userID", data.user.id);
-        await localStorage.setItem("token", data.token);
-        goto("/profile");
-      } else {
-        errorMessage = data.message;
+  const login = async () => {
+    error = false;
+    errorMessage = "";
+
+    try {
+      schema.parse({ email, password });
+      try {
+        const response = await fetch(`${API_ENDPOINTS.LOGIN}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ emailID: email, password: password }),
+        });
+
+        const data = await response.json();
+        if (data.message === "Login successful") {
+          await localStorage.setItem("userID", data.user.id);
+          await localStorage.setItem("token", data.token);
+          auth.login(data.token);
+          goto("/profile");
+        } else {
+          errorMessage = data.message;
+          error = true;
+          setTimeout(() => {
+            error = false;
+          }, 3000);
+        }
+      } catch (error) {
+        console.error("Login failed:", error);
         error = true;
+        errorMessage = "An error occurred during login. Please try again.";
         setTimeout(() => {
           error = false;
         }, 3000);
       }
-    } catch (error) {
-      console.error("Login failed:", error);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        err.issues;
+        console.log(err.issues[0].message);
+        error = true;
+        errorMessage = err.issues[0].message;
+        setTimeout(() => {
+          error = false;
+        }, 3000);
+      }
     }
   };
 </script>

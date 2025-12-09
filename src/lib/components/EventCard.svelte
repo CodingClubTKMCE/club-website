@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Calendar, MapPin, ArrowRight } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
+  import { API_BASE_URL, API_ENDPOINTS } from "$lib/api";
 
   interface Props {
     _id: string;
@@ -44,7 +45,7 @@
     // You can add any additional logic here if needed
     const token = await localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:3000/api/register/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/register/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -75,7 +76,7 @@
   <!-- eventImg Container -->
   <div class="relative h-48 overflow-hidden">
     <div
-      class="absolute inset-0 bg-gradient-to-t from-[#121212] to-transparent z-10 opacity-60"
+      class="absolute inset-0 from-[#121212] to-transparent z-10 opacity-60"
     ></div>
     <img
       src={eventImg}
@@ -93,7 +94,7 @@
   </div>
 
   <!-- Content -->
-  <div class="p-6 flex flex-col flex-grow">
+  <div class="p-6 flex flex-col">
     <h3
       class="text-xl font-bold text-white mb-2 line-clamp-1 group-hover:text-primary transition-colors"
     >

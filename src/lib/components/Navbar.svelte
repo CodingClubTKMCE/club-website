@@ -4,11 +4,11 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { Menu, X, Mail } from "lucide-svelte";
   import { onMount } from "svelte";
+  import { auth } from "$lib/stores/auth";
 
   let isScrolled = $state(false);
   let isMobileMenuOpen = $state(false);
-
-  let token = $state();
+  let token: string | null = $state(null);
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -30,18 +30,26 @@
     document.body.style.overflow = "";
   }
 
+  const unsubscribe = auth.subscribe((value) => {
+    token = value;
+  });
+
   onMount(() => {
     const handleScroll = () => {
       isScrolled = window.scrollY > 20;
     };
     window.addEventListener("scroll", handleScroll);
+    auth.init(); // <--- read token from localStorage on first load
 
     const fetchToken = async () => {
       token = await localStorage.getItem("token");
     };
     fetchToken();
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      unsubscribe();
+    };
   });
 </script>
 
