@@ -126,10 +126,11 @@
             class="w-full bg-[#1a1a1a] border-none rounded-lg py-3 px-4 text-white focus:ring-1 focus:ring-primary transition-all"
           >
             <option value="" disabled selected>Select Branch</option>
-            <option value="ER">ER</option>
-            <option value="AI">AI</option>
             <option value="CS">CS</option>
+            <option value="AI">AI</option>
+            <option value="ER">ER</option>
             <option value="EEE">EEE</option>
+            <option value="EEE">ECE</option>
             <option value="Mech">Mechanical</option>
             <option value="Civil">Civil</option>
             <option value="Chem">Chemical</option>

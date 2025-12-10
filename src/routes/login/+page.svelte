@@ -108,7 +108,7 @@
           class="w-full bg-[#1a1a1a] border-none rounded-lg py-3 px-4 text-white focus:ring-1 focus:ring-primary transition-all"
         />
         <div class="flex justify-end">
-          <a href="#" class="text-xs text-gray-400 hover:text-white"
+          <a href="/login" class="text-xs text-gray-400 hover:text-white"
             >Forgot Password?</a
           >
         </div>

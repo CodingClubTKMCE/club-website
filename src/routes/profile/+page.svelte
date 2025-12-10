@@ -47,31 +47,30 @@
     <section class="grid grid-cols-1 md:grid-cols-[2fr,1.2fr] gap-8 mb-10">
       <!-- LEFT PANEL -->
       <div
-        class="bg-gradient-to-br from-zinc-900/90 to-black border border-zinc-800/80 rounded-3xl p-8 shadow-xl"
+        class=" from-zinc-900/90 to-black border border-zinc-800/80 rounded-3xl p-8 shadow-xl"
       >
-        <p class="text-xs uppercase tracking-[0.22em] text-gray-500 mb-3">
-          Dashboard
-        </p>
-
         <h1 class="text-3xl font-semibold tracking-tight mb-2">
-          Welcome back,
           {#if user}
+            <p class="text-xs uppercase tracking-[0.22em] text-gray-500 mb-3">
+              Dashboard
+            </p>
+            Welcome back,
             <span
-              class="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-purple-500 bg-clip-text text-transparent"
+              class=" from-purple-400 via-fuchsia-400 to-purple-500 bg-clip-text text-transparent"
             >
               {user.name}
             </span>
           {:else}
-            Loading...
+            <!-- skeleton  -->
+            <span class="text-gray-500 animate-pulse">---</span>
           {/if}
         </h1>
 
-        <p class="text-sm text-gray-400 mb-6 max-w-md">
-          Here’s a quick overview of your profile and event activity.
-        </p>
-
         <!-- QUICK STATS -->
         {#if user}
+          <p class="text-sm text-gray-400 mb-6 max-w-md">
+            Here’s a quick overview of your profile and event activity.
+          </p>
           <div class="grid grid-cols-3 gap-4 text-sm">
             <div
               class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3"
@@ -98,7 +97,7 @@
           <div class="flex items-center gap-4 mb-6">
             <!-- Avatar -->
             <div
-              class="h-16 w-16 rounded-full bg-gradient-to-br from-purple-600 via-fuchsia-600 to-purple-800 flex items-center justify-center text-xl font-semibold shadow-xl"
+              class="h-16 w-16 rounded-full from-purple-600 via-fuchsia-600 to-purple-800 flex items-center justify-center text-xl font-semibold shadow-xl"
             >
               {getInitials(user.name)}
             </div>
@@ -127,7 +126,7 @@
             </p>
           </div>
         {:else}
-          <div class="animate-pulse text-gray-500">Loading profile...</div>
+          <div class="animate-pulse text-gray-500">----</div>
         {/if}
       </div>
     </section>

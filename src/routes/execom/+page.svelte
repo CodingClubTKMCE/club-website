@@ -178,7 +178,7 @@
     <!-- Header with CORE text -->
     <div class="text-center mb-20">
       <h1
-        class="text-6xl md:text-8xl font-bold text-[#0d0d0d] mb-4 tracking-tighter uppercase select-none"
+        class="text-6xl md:text-8xl font-bold text-[#3d3d3d] mb-4 tracking-tighter uppercase select-none"
       >
         CORE
       </h1>
@@ -269,7 +269,7 @@
         Technical Team
       </h2>
       <div
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto justify-items-center"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto place-items-center"
       >
         {#each technicalTeam as member}
           <ProfileCard {...member} size="medium" />
@@ -285,7 +285,7 @@
         Public Relations Team
       </h2>
       <div
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto justify-items-center"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto place-items-center"
       >
         {#each prTeam as member}
           <ProfileCard {...member} size="medium" />
