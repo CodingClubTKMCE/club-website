@@ -269,7 +269,7 @@
         Technical Team
       </h2>
       <div
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto place-items-center"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto justify-items-center"
       >
         {#each technicalTeam as member}
           <ProfileCard {...member} size="medium" />
@@ -285,7 +285,7 @@
         Public Relations Team
       </h2>
       <div
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto place-items-center"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto justify-items-center"
       >
         {#each prTeam as member}
           <ProfileCard {...member} size="medium" />

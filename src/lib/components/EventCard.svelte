@@ -42,7 +42,6 @@
   }
 
   async function handleRegister(id: any) {
-    // You can add any additional logic here if needed
     const token = await localStorage.getItem("token");
     try {
       const res = await fetch(`${API_BASE_URL}/api/register/${id}`, {
