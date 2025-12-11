@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { Calendar, MapPin, ArrowRight } from "lucide-svelte";
+  import { Calendar, MapPin, ArrowRight, Check } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
-  import { API_BASE_URL, API_ENDPOINTS } from "$lib/api";
+  import { API_BASE_URL } from "$lib/api";
+  import { auth } from "$lib/stores/auth";
 
   interface Props {
     _id: string;
@@ -10,6 +11,8 @@
     eventVenue: string;
     eventImg: string;
     link?: string;
+    registered: boolean;
+    isAdmin: boolean;
   }
 
   let {
@@ -18,8 +21,9 @@
     eventDate,
     eventVenue,
     eventImg,
-
     link = "#",
+    registered,
+    isAdmin,
   }: Props = $props();
 
   let message = $state("");
@@ -42,7 +46,7 @@
   }
 
   async function handleRegister(id: any) {
-    const token = await localStorage.getItem("token");
+    const token = $auth;
     try {
       const res = await fetch(`${API_BASE_URL}/api/register/${id}`, {
         method: "POST",
@@ -54,6 +58,7 @@
       });
       if (res.status === 201) {
         message = "Registration successful!";
+        registered = true;
         setTimeout(() => {
           message = "";
         }, 3000);
@@ -107,7 +112,8 @@
 
     <div class="mt-auto">
       <!-- If event is in past dont show register button -->
-      {#if !processDate(eventDate).isPast}
+      <!-- {#if !processDate(eventDate).isPast && !isAdmin} -->
+      {#if !registered}
         <Button
           class="w-full bg-white/5 hover:bg-primary hover:text-white text-white border border-white/10 transition-all duration-300 group/btn"
           onclick={() => handleRegister(eventId)}
@@ -117,6 +123,18 @@
             class="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform"
           />
         </Button>
+      {:else}
+        <Button
+          class="w-full bg-green-600 hover:bg-green-700 text-white border border-white/10 transition-all duration-300 cursor-default"
+          disabled
+        >
+          Registered
+          <Check class="w-4 h-4 ml-2" />
+        </Button>
+      {/if}
+      <!-- {/if} -->
+      {#if isAdmin}
+        <a href={`/${eventId}`}>View registrations</a>
       {/if}
     </div>
   </div>

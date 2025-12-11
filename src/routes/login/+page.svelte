@@ -36,8 +36,13 @@
         if (data.message === "Login successful") {
           await localStorage.setItem("userID", data.user.id);
           await localStorage.setItem("token", data.token);
+          await localStorage.setItem("role", data.user.isAdmin);
           auth.login(data.token);
-          goto("/profile");
+          if (data.user.isAdmin) {
+            goto("/admin");
+          } else {
+            goto("/profile");
+          }
         } else {
           errorMessage = data.message;
           error = true;

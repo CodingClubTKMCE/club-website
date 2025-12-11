@@ -2,10 +2,13 @@
   //@ts-nocheck
   import EventCard from "$lib/components/EventCard.svelte";
   import { API_ENDPOINTS } from "$lib/api";
+  import { onMount } from "svelte";
+  import { auth } from "$lib/stores/auth";
 
   let events = $state([]);
   let pastEvents = $state([]);
   let upcomingEvents = $state([]);
+  let registeredEvents = $state([]);
 
   async function getEvents() {
     try {
@@ -24,14 +27,34 @@
     }
   }
 
-  // function to check if an event is upcoming or in the past... event date is in the format 2025-09-22T00:00:00.000Z
   function isUpcoming(eventDate) {
     const eventDateObj = new Date(eventDate);
     const currentDate = new Date();
     return eventDateObj >= currentDate;
   }
 
-  getEvents();
+  async function getRegisteredEvents() {
+    try {
+      const token = $auth;
+      const response = await fetch(API_ENDPOINTS.REGISTERED_EVENTS, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      });
+      const data = await response.json();
+      registeredEvents = data;
+    } catch (error) {
+      console.error("Error fetching registered events:", error);
+    }
+  }
+
+  onMount(() => {
+    getEvents();
+    getRegisteredEvents();
+  });
 </script>
 
 <svelte:head>
@@ -54,7 +77,7 @@
     {/if}
     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
       {#each upcomingEvents as event}
-        <EventCard {...event} />
+        <EventCard {...event} registered={false} />
       {/each}
     </div>
   </section>
@@ -70,7 +93,10 @@
 
     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
       {#each pastEvents as event}
-        <EventCard {...event} />
+        <EventCard
+          {...event}
+          registered={registeredEvents.includes(event._id)}
+        />
       {/each}
     </div>
   </section>

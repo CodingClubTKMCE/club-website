@@ -1,11 +1,13 @@
-<script>
+<script lang="ts">
   //@ts-nocheck
   import { API_ENDPOINTS } from "$lib/api";
+  import EventCard from "$lib/components/EventCard.svelte";
   import { auth } from "$lib/stores/auth";
   import { onMount } from "svelte";
 
-  let userID = "";
-  let user = null;
+  let userID = $state("");
+  let user = $state(null);
+  let registeredEvents = $state([]);
 
   const fetchProfile = async () => {
     try {
@@ -23,6 +25,23 @@
       user = data;
     } catch (error) {
       console.error("Fetching profile failed:", error);
+    }
+
+    // get registered events
+    try {
+      const token = $auth;
+      const res = await fetch(`${API_ENDPOINTS.USER_EVENTS}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      });
+      const registeredData = await res.json();
+      registeredEvents = registeredData || [];
+    } catch (error) {
+      console.error("Error fetching registered events:", error);
     }
   };
 
@@ -132,14 +151,24 @@
     </section>
 
     <!-- Lower section: placeholder for events or registrations -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8"></section>
+    <h1
+      class="my-8 text-2xl md:text-4xl underline decoration-primary text-center"
+    >
+      Registered Events
+    </h1>
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {#each registeredEvents as event}
+        <EventCard {...event} />
+      {/each}
+    </section>
 
     <!-- Logout -->
     <div class="mt-12">
       <button
-        on:click={() => {
+        onclick={() => {
           localStorage.removeItem("token");
           localStorage.removeItem("userID");
+          localStorage.removeItem("role");
           auth.logout();
           window.location.href = "/";
         }}

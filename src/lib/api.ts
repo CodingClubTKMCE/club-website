@@ -6,4 +6,8 @@ export const API_ENDPOINTS = {
   LOGIN: `${API_BASE_URL}/api/members/login`,
   PROFILE: `${API_BASE_URL}/api/members/profile`,
   EVENT: `${API_BASE_URL}/api/events/`,
+  REGISTERED_EVENTS: `${API_BASE_URL}/api/events/registeredEvents`,
+  USER_EVENTS: `${API_BASE_URL}/api/events/userEvents`,
+  EVENT_REGISTRATIONS: `${API_BASE_URL}/api/events/getregistrations`,
+  CREATE_EVENT: `${API_BASE_URL}/api/events/createnewevent`,
 };

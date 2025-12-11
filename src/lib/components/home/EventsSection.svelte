@@ -3,9 +3,12 @@
   import { API_ENDPOINTS } from "$lib/api";
   import EventCard from "$lib/components/EventCard.svelte";
   import { Calendar } from "lucide-svelte";
+  import { auth } from "$lib/stores/auth";
 
   let events = $state([]);
   let upcomingEvents = $state([]);
+  let registeredEvents = $state([]);
+  let token: string | null = $state(null);
 
   async function getEvents() {
     try {
@@ -19,6 +22,23 @@
       });
     } catch (error) {
       console.error("Error fetching events:", error);
+    }
+
+    token = $auth;
+
+    try {
+      const response = await fetch(API_ENDPOINTS.REGISTERED_EVENTS, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      });
+      const data = await response.json();
+      registeredEvents = data || [];
+    } catch (err) {
+      console.log("Error fetching registered events", err);
     }
   }
 

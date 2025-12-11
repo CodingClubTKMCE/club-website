@@ -42,7 +42,7 @@
     auth.init(); // <--- read token from localStorage on first load
 
     const fetchToken = async () => {
-      token = await localStorage.getItem("token");
+      token = $auth;
     };
     fetchToken();
 
