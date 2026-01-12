@@ -1,5 +1,6 @@
 <script lang="ts">
 // @ts-nocheck
+import { browser } from "$app/environment";
 import { API_ENDPOINTS } from "$lib/api";
 import EventCard from "$lib/components/EventCard.svelte";
 import { auth } from "$lib/stores/auth";
@@ -10,6 +11,8 @@ let user = $state(null);
 let registeredEvents = $state([]);
 
 const fetchProfile = async () => {
+  if (!browser) return; // Guard against SSR
+
   try {
     const storedUserID = localStorage.getItem("userID");
     if (!storedUserID) return;
@@ -87,7 +90,7 @@ function getInitials(name) {
         <!-- QUICK STATS -->
         {#if user}
           <p class="text-sm text-gray-400 mb-6 max-w-md">
-            Here’s a quick overview of your profile and event activity.
+            Here's a quick overview of your profile and event activity.
           </p>
           <div class="grid grid-cols-3 gap-4 text-sm">
             <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3">
@@ -155,11 +158,13 @@ function getInitials(name) {
     <div class="mt-12">
       <button
         onclick={() => {
-          localStorage.removeItem("token");
-          localStorage.removeItem("userID");
-          localStorage.removeItem("role");
-          auth.logout();
-          window.location.href = "/";
+          if (browser) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userID");
+            localStorage.removeItem("role");
+            auth.logout();
+            window.location.href = "/";
+          }
         }}
         class="px-6 py-2 rounded-full bg-red-600/80 hover:bg-red-600 transition text-sm"
       >
