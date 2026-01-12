@@ -99,10 +99,15 @@ function getInitials(name) {
 async function handleLogout() {
   if (typeof window === "undefined") return;
 
+  const token = localStorage.getItem("token");
+
   try {
     // Try to call backend logout endpoint
     await fetch(`${API_ENDPOINTS.LOGOUT}`, {
       method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
       credentials: "include",
     }).catch(() => {});
 

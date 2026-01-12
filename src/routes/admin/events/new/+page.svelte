@@ -49,6 +49,7 @@
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         credentials: "include", // include cookies if your backend uses them
         body: JSON.stringify(payload),
