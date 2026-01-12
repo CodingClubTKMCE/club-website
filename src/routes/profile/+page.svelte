@@ -216,7 +216,7 @@ async function handleLogout() {
       </h1>
       <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {#each registeredEvents as event}
-          <EventCard {...event} loggedIn={true} />
+          <EventCard {...event} loggedIn={true} registered />
         {/each}
       </section>
 
