@@ -1,13 +1,27 @@
 <script lang="ts">
   //@ts-nocheck
+  import { goto } from "$app/navigation";
   import { API_ENDPOINTS } from "$lib/api";
   import EventCard from "$lib/components/EventCard.svelte";
   import { auth } from "$lib/stores/auth";
+  import { role } from "$lib/stores/role";
   import { onMount } from "svelte";
 
+  interface User {
+    name: string;
+    year: number;
+    branch: string;
+    emailID: string;
+  }
+
   let userID = $state("");
-  let user = $state(null);
+  let user = $state<User | null>(null);
   let registeredEvents = $state([]);
+  let isAdmin = $state(null);
+
+  const unsubscribe = role.subscribe((value) => {
+    isAdmin = value;
+  });
 
   const fetchProfile = async () => {
     try {
@@ -45,7 +59,21 @@
     }
   };
 
-  onMount(() => fetchProfile());
+  onMount(async () => {
+    await fetchProfile();
+    role.init();
+    const fetchStatus = async () => {
+      isAdmin = $role;
+    };
+    fetchStatus();
+    const token = $auth;
+    if (!token) {
+      goto("/login");
+    }
+    if (isAdmin === "true") {
+      goto("/admin");
+    }
+  });
 
   fetchProfile();
 
@@ -158,7 +186,7 @@
     </h1>
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {#each registeredEvents as event}
-        <EventCard {...event} />
+        <EventCard {...event} loggedIn={false} />
       {/each}
     </section>
 
@@ -170,6 +198,7 @@
           localStorage.removeItem("userID");
           localStorage.removeItem("role");
           auth.logout();
+          role.logout();
           window.location.href = "/";
         }}
         class="px-6 py-2 rounded-full bg-red-600/80 hover:bg-red-600 transition text-sm"

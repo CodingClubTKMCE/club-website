@@ -4,11 +4,16 @@
   import EventCard from "$lib/components/EventCard.svelte";
   import { Calendar } from "lucide-svelte";
   import { auth } from "$lib/stores/auth";
+  import { includes } from "zod";
+  import { onMount } from "svelte";
 
   let events = $state([]);
   let upcomingEvents = $state([]);
   let registeredEvents = $state([]);
   let token: string | null = $state(null);
+  let loggedIn = $state(false);
+
+  token = $auth;
 
   async function getEvents() {
     try {
@@ -23,8 +28,6 @@
     } catch (error) {
       console.error("Error fetching events:", error);
     }
-
-    token = $auth;
 
     try {
       const response = await fetch(API_ENDPOINTS.REGISTERED_EVENTS, {
@@ -49,7 +52,12 @@
     return eventDateObj >= currentDate;
   }
 
-  getEvents();
+  onMount(() => {
+    getEvents();
+    if (token) {
+      loggedIn = true;
+    }
+  });
 </script>
 
 <section class="pt-12 pb-24 bg-black/50 relative">
@@ -75,7 +83,11 @@
 
     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
       {#each upcomingEvents as event}
-        <EventCard {...event} />
+        <EventCard
+          {...event}
+          registered={registeredEvents.includes(event._id)}
+          {loggedIn}
+        />
       {/each}
     </div>
 

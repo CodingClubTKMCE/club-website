@@ -2,6 +2,8 @@
   import { goto } from "$app/navigation";
   import { API_ENDPOINTS } from "$lib/api";
   import { Button } from "$lib/components/ui/button";
+  import { auth } from "$lib/stores/auth";
+  import { role } from "$lib/stores/role";
   import { CalendarDays, Plus, ArrowRight } from "lucide-svelte";
   import { onMount } from "svelte";
 
@@ -17,6 +19,11 @@
   let events = $state<Event[]>([]);
   let upcomingEvents = $state<Event[]>([]);
   let pastEvents = $state<Event[]>([]);
+  let isAdmin = $state<String | null>(null);
+
+  const unsubscribe = role.subscribe((value) => {
+    isAdmin = value;
+  });
 
   function isUpcoming(eventDate: string) {
     const eventDateObj = new Date(eventDate);
@@ -43,12 +50,15 @@
 
   const handleCreateEvent = () => {
     goto("/admin/events/new");
-    console.log("Create event clicked");
   };
 
   onMount(() => {
-    const isAdmin = localStorage.getItem("role");
-    if (isAdmin == "false") {
+    role.init();
+    const fetchStatus = async () => {
+      isAdmin = $role;
+    };
+    fetchStatus();
+    if (!isAdmin || isAdmin === "false") {
       goto("/profile");
     }
     getEvents();
@@ -155,6 +165,21 @@
           {/if}
         </div>
       </section>
+    </div>
+    <div class="mt-12">
+      <button
+        onclick={() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("userID");
+          localStorage.removeItem("role");
+          auth.logout();
+          role.logout();
+          window.location.href = "/";
+        }}
+        class="px-6 py-2 rounded-full bg-red-600/80 hover:bg-red-600 transition text-sm"
+      >
+        Logout
+      </button>
     </div>
   </div>
 </div>
