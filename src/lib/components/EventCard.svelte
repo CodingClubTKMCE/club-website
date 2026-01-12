@@ -107,7 +107,7 @@ async function handleRegister(id: any) {
     </div>
 
     <div class="mt-auto">
-      {#if !loggedIn}
+      {#if !loggedIn && !processDate(eventDate).isPast}
         <Button
           class="w-full bg-white/5 text-white border border-white/10 cursor-not-allowed"
           disabled
