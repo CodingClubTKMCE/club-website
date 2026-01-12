@@ -5,6 +5,7 @@
   import { Menu, X, Mail } from "lucide-svelte";
   import { onMount } from "svelte";
   import { auth } from "$lib/stores/auth";
+  import { role } from "$lib/stores/role";
 
   let isScrolled = $state(false);
   let isMobileMenuOpen = $state(false);
@@ -102,6 +103,18 @@
           variant="outline"
           class="bg-white/5 text-white rounded-full px-6 shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all duration-300"
           >Profile</Button
+        >
+        <Button
+          onclick={() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userID");
+            localStorage.removeItem("role");
+            auth.logout();
+            role.logout();
+            window.location.href = "/";
+          }}
+          class="bg-red-500 text-white rounded-full px-6 shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all duration-300"
+          >Logout</Button
         >
       {/if}
     </div>
