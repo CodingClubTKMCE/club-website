@@ -10,36 +10,38 @@ import { onMount } from "svelte";
 let userID = $state("");
 let user = $state(null);
 let registeredEvents = $state([]);
-let isAdmin = $state(null);
-
-const unsubscribe = role.subscribe((value) => {
-  isAdmin = value;
-});
+let isLoading = $state(true);
 
 const fetchProfile = async () => {
-  if (typeof window === "undefined") return; // Guard against SSR
+  if (typeof window === "undefined") return;
 
   try {
     const storedUserID = localStorage.getItem("userID");
-    if (!storedUserID) return;
+    const token = localStorage.getItem("token");
+
+    if (!storedUserID || !token) {
+      await goto("/login");
+      return;
+    }
 
     userID = storedUserID;
 
     const response = await fetch(`${API_ENDPOINTS.PROFILE}/${userID}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
       credentials: "include",
     });
 
-    user = await response.json();
-  } catch (error) {
-    console.error("Fetching profile failed:", error);
-    return;
-  }
+    if (!response.ok) {
+      throw new Error("Failed to fetch profile");
+    }
 
-  // Get registered events
-  try {
-    const token = $auth;
+    user = await response.json();
+
+    // Get registered events
     const res = await fetch(`${API_ENDPOINTS.USER_EVENTS}`, {
       method: "POST",
       headers: {
@@ -49,25 +51,40 @@ const fetchProfile = async () => {
       credentials: "include",
     });
 
-    registeredEvents = (await res.json()) || [];
+    if (res.ok) {
+      registeredEvents = (await res.json()) || [];
+    }
   } catch (error) {
-    console.error("Error fetching registered events:", error);
+    console.error("Fetching profile failed:", error);
+    await goto("/login");
+  } finally {
+    isLoading = false;
   }
 };
 
 onMount(async () => {
-  await fetchProfile();
-  role.init();
+  if (typeof window === "undefined") return;
 
-  const token = $auth;
+  const token = localStorage.getItem("token");
+  const roleValue = localStorage.getItem("role");
+
+  // Check if user is logged in
   if (!token) {
-    goto("/login");
+    await goto("/login");
     return;
   }
 
-  if ($role === "true") {
-    goto("/admin");
+  // Check if user is admin - redirect to admin page
+  if (roleValue === "true") {
+    await goto("/admin");
+    return;
   }
+
+  // Initialize role store
+  role.init();
+
+  // Fetch profile data
+  await fetchProfile();
 });
 
 function getInitials(name) {
@@ -83,124 +100,135 @@ async function handleLogout() {
   if (typeof window === "undefined") return;
 
   try {
+    // Try to call backend logout endpoint
     await fetch(`${API_ENDPOINTS.LOGOUT}`, {
       method: "POST",
       credentials: "include",
     }).catch(() => {});
 
+    // Clear all auth data
     localStorage.removeItem("token");
     localStorage.removeItem("userID");
     localStorage.removeItem("role");
 
+    // Clear auth store
     auth.logout();
 
-    await goto("/login");
+    // Redirect to home or login
+    await goto("/");
   } catch (error) {
     console.error("Logout error:", error);
-    window.location.href = "/login";
+    window.location.href = "/";
   }
 }
 </script>
 
-<!-- MAIN PAGE -->
-<div class="min-h-screen bg-black text-gray-100 pt-32 pb-16 px-4">
-  <div class="max-w-6xl mx-auto">
-    <!-- Greeting + user summary -->
-    <section class="grid grid-cols-1 md:grid-cols-[2fr,1.2fr] gap-8 mb-10">
-      <!-- LEFT PANEL -->
-      <div class="from-zinc-900/90 to-black border border-zinc-800/80 rounded-3xl p-8 shadow-xl">
-        <h1 class="text-3xl font-semibold tracking-tight mb-2">
+{#if isLoading}
+  <div class="min-h-screen bg-black text-gray-100 flex items-center justify-center">
+    <div class="text-gray-500 animate-pulse">Loading profile...</div>
+  </div>
+{:else}
+  <!-- MAIN PAGE -->
+  <div class="min-h-screen bg-black text-gray-100 pt-32 pb-16 px-4">
+    <div class="max-w-6xl mx-auto">
+      <!-- Greeting + user summary -->
+      <section class="grid grid-cols-1 md:grid-cols-[2fr,1.2fr] gap-8 mb-10">
+        <!-- LEFT PANEL -->
+        <div class="from-zinc-900/90 to-black border border-zinc-800/80 rounded-3xl p-8 shadow-xl">
+          <h1 class="text-3xl font-semibold tracking-tight mb-2">
+            {#if user}
+              <p class="text-xs uppercase tracking-[0.22em] text-gray-500 mb-3">
+                Dashboard
+              </p>
+              Welcome back,
+              <span
+                class="from-purple-400 via-fuchsia-400 to-purple-500 bg-clip-text text-transparent"
+              >
+                {user.name}
+              </span>
+            {:else}
+              <!-- skeleton  -->
+              <span class="text-gray-500 animate-pulse">---</span>
+            {/if}
+          </h1>
+
+          <!-- QUICK STATS -->
           {#if user}
-            <p class="text-xs uppercase tracking-[0.22em] text-gray-500 mb-3">
-              Dashboard
+            <p class="text-sm text-gray-400 mb-6 max-w-md">
+              Here's a quick overview of your profile and event activity.
             </p>
-            Welcome back,
-            <span
-              class="from-purple-400 via-fuchsia-400 to-purple-500 bg-clip-text text-transparent"
-            >
-              {user.name}
-            </span>
-          {:else}
-            <!-- skeleton  -->
-            <span class="text-gray-500 animate-pulse">---</span>
+            <div class="grid grid-cols-3 gap-4 text-sm">
+              <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3">
+                <p class="text-gray-500 mb-1">Year</p>
+                <p class="text-gray-100 font-medium">{user.year}</p>
+              </div>
+
+              <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3">
+                <p class="text-gray-500 mb-1">Branch</p>
+                <p class="text-gray-100 font-medium">{user.branch}</p>
+              </div>
+            </div>
           {/if}
-        </h1>
+        </div>
 
-        <!-- QUICK STATS -->
-        {#if user}
-          <p class="text-sm text-gray-400 mb-6 max-w-md">
-            Here's a quick overview of your profile and event activity.
-          </p>
-          <div class="grid grid-cols-3 gap-4 text-sm">
-            <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3">
-              <p class="text-gray-500 mb-1">Year</p>
-              <p class="text-gray-100 font-medium">{user.year}</p>
+        <!-- RIGHT PROFILE CARD -->
+        <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 flex flex-col">
+          {#if user}
+            <div class="flex items-center gap-4 mb-6">
+              <!-- Avatar -->
+              <div class="h-16 w-16 rounded-full from-purple-600 via-fuchsia-600 to-purple-800 flex items-center justify-center text-xl font-semibold shadow-xl">
+                {getInitials(user.name)}
+              </div>
+
+              <div>
+                <p class="text-xs uppercase tracking-[0.22em] text-gray-500">
+                  Member Profile
+                </p>
+                <p class="text-lg font-semibold text-gray-100">{user.name}</p>
+                <p class="text-xs text-gray-400 mt-1">
+                  {user.branch}, Year {user.year}
+                </p>
+              </div>
             </div>
 
-            <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3">
-              <p class="text-gray-500 mb-1">Branch</p>
-              <p class="text-gray-100 font-medium">{user.branch}</p>
-            </div>
-          </div>
-        {/if}
-      </div>
-
-      <!-- RIGHT PROFILE CARD -->
-      <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 flex flex-col">
-        {#if user}
-          <div class="flex items-center gap-4 mb-6">
-            <!-- Avatar -->
-            <div class="h-16 w-16 rounded-full from-purple-600 via-fuchsia-600 to-purple-800 flex items-center justify-center text-xl font-semibold shadow-xl">
-              {getInitials(user.name)}
-            </div>
-
-            <div>
-              <p class="text-xs uppercase tracking-[0.22em] text-gray-500">
-                Member Profile
+            <!-- Meta Info -->
+            <div class="space-y-2 text-xs text-gray-400 mb-6">
+              <p class="flex items-center gap-2">
+                <span class="h-1.5 w-1.5 rounded-full bg-purple-500"></span>
+                {user.emailID}
               </p>
-              <p class="text-lg font-semibold text-gray-100">{user.name}</p>
-              <p class="text-xs text-gray-400 mt-1">
-                {user.branch}, Year {user.year}
+              <p class="flex items-center gap-2">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                Status:
+                <span class="text-gray-200 font-medium ml-1"
+                >Active Member</span>
               </p>
             </div>
-          </div>
+          {:else}
+            <div class="animate-pulse text-gray-500">----</div>
+          {/if}
+        </div>
+      </section>
 
-          <!-- Meta Info -->
-          <div class="space-y-2 text-xs text-gray-400 mb-6">
-            <p class="flex items-center gap-2">
-              <span class="h-1.5 w-1.5 rounded-full bg-purple-500"></span>
-              {user.emailID}
-            </p>
-            <p class="flex items-center gap-2">
-              <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-              Status:
-              <span class="text-gray-200 font-medium ml-1">Active Member</span>
-            </p>
-          </div>
-        {:else}
-          <div class="animate-pulse text-gray-500">----</div>
-        {/if}
+      <!-- Lower section: placeholder for events or registrations -->
+      <h1 class="my-8 text-2xl md:text-4xl underline decoration-primary text-center">
+        Registered Events
+      </h1>
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {#each registeredEvents as event}
+          <EventCard {...event} loggedIn={true} />
+        {/each}
+      </section>
+
+      <!-- Logout -->
+      <div class="mt-12">
+        <button
+          onclick={handleLogout}
+          class="px-6 py-2 rounded-full bg-red-600/80 hover:bg-red-600 transition text-sm"
+        >
+          Logout
+        </button>
       </div>
-    </section>
-
-    <!-- Lower section: placeholder for events or registrations -->
-    <h1 class="my-8 text-2xl md:text-4xl underline decoration-primary text-center">
-      Registered Events
-    </h1>
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {#each registeredEvents as event}
-        <EventCard {...event} loggedIn={false} />
-      {/each}
-    </section>
-
-    <!-- Logout -->
-    <div class="mt-12">
-      <button
-        onclick={handleLogout}
-        class="px-6 py-2 rounded-full bg-red-600/80 hover:bg-red-600 transition text-sm"
-      >
-        Logout
-      </button>
     </div>
   </div>
-</div>
+{/if}
