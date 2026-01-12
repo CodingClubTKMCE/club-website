@@ -28,6 +28,7 @@ const fetchProfile = async () => {
     user = await response.json();
   } catch (error) {
     console.error("Fetching profile failed:", error);
+    return;
   }
 
   try {
@@ -60,6 +61,16 @@ function getInitials(name) {
     .slice(0, 2)
     .map((n) => n[0].toUpperCase())
     .join("");
+}
+
+function handleLogout() {
+  if (!browser) return;
+
+  localStorage.removeItem("token");
+  localStorage.removeItem("userID");
+  localStorage.removeItem("role");
+  auth.logout();
+  window.location.href = "/";
 }
 </script>
 
@@ -157,15 +168,7 @@ function getInitials(name) {
     <!-- Logout -->
     <div class="mt-12">
       <button
-        onclick={() => {
-          if (browser) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("userID");
-            localStorage.removeItem("role");
-            auth.logout();
-            window.location.href = "/";
-          }
-        }}
+        onclick={handleLogout}
         class="px-6 py-2 rounded-full bg-red-600/80 hover:bg-red-600 transition text-sm"
       >
         Logout
