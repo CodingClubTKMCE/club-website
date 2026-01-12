@@ -1,147 +1,178 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
-  import { API_ENDPOINTS } from "$lib/api";
+// @ts-nocheck
+import { API_ENDPOINTS } from "$lib/api";
+import EventCard from "$lib/components/EventCard.svelte";
+import { auth } from "$lib/stores/auth";
+import { onMount } from "svelte";
 
-  import { Button } from "$lib/components/ui/button/index.js";
-  import { auth } from "$lib/stores/auth";
-  import { role } from "$lib/stores/role";
-  import z from "zod";
+let userID = $state("");
+let user = $state(null);
+let registeredEvents = $state([]);
 
-  let email = $state("");
-  let password = $state("");
-  let error = $state(false);
-  let errorMessage = $state("");
+const fetchProfile = async () => {
+  // Check if we're in browser using typeof window
+  if (typeof window === "undefined") return;
 
-  const schema = z.object({
-    email: z.email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters long"),
-  });
+  try {
+    const storedUserID = localStorage.getItem("userID");
+    if (!storedUserID) return;
 
-  const login = async () => {
-    error = false;
-    errorMessage = "";
+    userID = storedUserID;
 
-    try {
-      schema.parse({ email, password });
-      try {
-        const response = await fetch(`${API_ENDPOINTS.LOGIN}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ emailID: email, password: password }),
-        });
+    const response = await fetch(`${API_ENDPOINTS.PROFILE}/${userID}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
 
-        const data = await response.json();
-        if (data.message === "Login successful") {
-          await localStorage.setItem("userID", data.user.id);
-          await localStorage.setItem("token", data.token);
-          await localStorage.setItem("role", data.user.isAdmin);
-          auth.login(data.token);
-          if (data.user.isAdmin) {
-            role.login(data.user.isAdmin);
-            goto("/admin");
-          } else {
-            goto("/profile");
-          }
-        } else {
-          errorMessage = data.message;
-          error = true;
-          setTimeout(() => {
-            error = false;
-          }, 3000);
-        }
-      } catch (error) {
-        console.error("Login failed:", error);
-        error = true;
-        errorMessage = "An error occurred during login. Please try again.";
-        setTimeout(() => {
-          error = false;
-        }, 3000);
-      }
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        err.issues;
-        console.log(err.issues[0].message);
-        error = true;
-        errorMessage = err.issues[0].message;
-        setTimeout(() => {
-          error = false;
-        }, 3000);
-      }
-    }
-  };
+    user = await response.json();
+  } catch (error) {
+    console.error("Fetching profile failed:", error);
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const res = await fetch(`${API_ENDPOINTS.USER_EVENTS}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+    });
+
+    registeredEvents = (await res.json()) || [];
+  } catch (error) {
+    console.error("Error fetching registered events:", error);
+  }
+};
+
+onMount(() => {
+  fetchProfile();
+});
+
+function getInitials(name) {
+  if (!name) return "CC";
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((n) => n[0].toUpperCase())
+    .join("");
+}
+
+function handleLogout() {
+  if (typeof window === "undefined") return;
+
+  localStorage.removeItem("token");
+  localStorage.removeItem("userID");
+  localStorage.removeItem("role");
+  auth.logout();
+  window.location.href = "/";
+}
 </script>
 
-<svelte:head>
-  <title>Login | Coding Club TKMCE</title>
-</svelte:head>
+<!-- MAIN PAGE -->
+<div class="min-h-screen bg-black text-gray-100 pt-32 pb-16 px-4">
+  <div class="max-w-6xl mx-auto">
+    <!-- Greeting + user summary -->
+    <section class="grid grid-cols-1 md:grid-cols-[2fr,1.2fr] gap-8 mb-10">
+      <!-- LEFT PANEL -->
+      <div class="from-zinc-900/90 to-black border border-zinc-800/80 rounded-3xl p-8 shadow-xl">
+        <h1 class="text-3xl font-semibold tracking-tight mb-2">
+          {#if user}
+            <p class="text-xs uppercase tracking-[0.22em] text-gray-500 mb-3">
+              Dashboard
+            </p>
+            Welcome back,
+            <span
+              class="from-purple-400 via-fuchsia-400 to-purple-500 bg-clip-text text-transparent"
+            >
+              {user.name}
+            </span>
+          {:else}
+            <!-- skeleton  -->
+            <span class="text-gray-500 animate-pulse">---</span>
+          {/if}
+        </h1>
 
-<div
-  class="min-h-screen flex items-center justify-center relative overflow-hidden px-4"
->
-  <div class="w-full max-w-md relative z-10">
-    <div class="mb-12">
-      <h1 class="text-4xl font-bold text-white mb-2">Login</h1>
-      <p class="text-green-500 font-medium"># Hi, Welcome Back</p>
-    </div>
+        <!-- QUICK STATS -->
+        {#if user}
+          <p class="text-sm text-gray-400 mb-6 max-w-md">
+            Here's a quick overview of your profile and event activity.
+          </p>
+          <div class="grid grid-cols-3 gap-4 text-sm">
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3">
+              <p class="text-gray-500 mb-1">Year</p>
+              <p class="text-gray-100 font-medium">{user.year}</p>
+            </div>
 
-    <form class="space-y-6">
-      <div class="space-y-2">
-        <label for="email" class="text-sm font-medium text-gray-400"
-          >Email</label
-        >
-        <input
-          required
-          type="email"
-          id="email"
-          placeholder="example@gmail.com"
-          class="w-full bg-[#1a1a1a] border-none rounded-lg py-3 px-4 text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary transition-all"
-          bind:value={email}
-        />
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3">
+              <p class="text-gray-500 mb-1">Branch</p>
+              <p class="text-gray-100 font-medium">{user.branch}</p>
+            </div>
+          </div>
+        {/if}
       </div>
 
-      <div class="space-y-2">
-        <label for="password" class="text-sm font-medium text-gray-400"
-          >Password</label
-        >
-        <input
-          required
-          type="password"
-          id="password"
-          placeholder="Enter your password"
-          bind:value={password}
-          class="w-full bg-[#1a1a1a] border-none rounded-lg py-3 px-4 text-white focus:ring-1 focus:ring-primary transition-all"
-        />
-        <div class="flex justify-end">
-          <a href="/login" class="text-xs text-gray-400 hover:text-white"
-            >Forgot Password?</a
-          >
-        </div>
+      <!-- RIGHT PROFILE CARD -->
+      <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 flex flex-col">
+        {#if user}
+          <div class="flex items-center gap-4 mb-6">
+            <!-- Avatar -->
+            <div class="h-16 w-16 rounded-full from-purple-600 via-fuchsia-600 to-purple-800 flex items-center justify-center text-xl font-semibold shadow-xl">
+              {getInitials(user.name)}
+            </div>
+
+            <div>
+              <p class="text-xs uppercase tracking-[0.22em] text-gray-500">
+                Member Profile
+              </p>
+              <p class="text-lg font-semibold text-gray-100">{user.name}</p>
+              <p class="text-xs text-gray-400 mt-1">
+                {user.branch}, Year {user.year}
+              </p>
+            </div>
+          </div>
+
+          <!-- Meta Info -->
+          <div class="space-y-2 text-xs text-gray-400 mb-6">
+            <p class="flex items-center gap-2">
+              <span class="h-1.5 w-1.5 rounded-full bg-purple-500"></span>
+              {user.emailID}
+            </p>
+            <p class="flex items-center gap-2">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+              Status:
+              <span class="text-gray-200 font-medium ml-1">Active Member</span>
+            </p>
+          </div>
+        {:else}
+          <div class="animate-pulse text-gray-500">----</div>
+        {/if}
       </div>
+    </section>
 
-      <Button
-        type="submit"
-        onclick={login}
-        class="w-full py-6 text-lg bg-primary hover:bg-primary/90 rounded-lg transition-all duration-300"
-      >
-        Login
-      </Button>
-    </form>
+    <!-- Lower section: placeholder for events or registrations -->
+    <h1 class="my-8 text-2xl md:text-4xl underline decoration-primary text-center">
+      Registered Events
+    </h1>
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {#each registeredEvents as event}
+        <EventCard {...event} />
+      {/each}
+    </section>
 
-    <div class="mt-6 text-sm text-gray-400">
-      Not registered yet?
-      <a href="/register" class="text-primary hover:underline"
-        >Create an account</a
+    <!-- Logout -->
+    <div class="mt-12">
+      <button
+        onclick={handleLogout}
+        class="px-6 py-2 rounded-full bg-red-600/80 hover:bg-red-600 transition text-sm"
       >
+        Logout
+      </button>
     </div>
   </div>
-  {#if error}
-    <div
-      class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg"
-    >
-      {errorMessage}
-    </div>
-  {/if}
 </div>
