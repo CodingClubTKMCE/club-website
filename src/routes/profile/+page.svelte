@@ -10,9 +10,14 @@ import { onMount } from "svelte";
 let userID = $state("");
 let user = $state(null);
 let registeredEvents = $state([]);
+let isAdmin = $state(null);
+
+const unsubscribe = role.subscribe((value) => {
+  isAdmin = value;
+});
 
 const fetchProfile = async () => {
-  if (!browser) return; // Guard against SSR
+  if (typeof window === "undefined") return; // Guard against SSR
 
   try {
     const storedUserID = localStorage.getItem("userID");
@@ -32,73 +37,9 @@ const fetchProfile = async () => {
     return;
   }
 
-  let userID = $state("");
-  let user = $state<User | null>(null);
-  let registeredEvents = $state([]);
-  let isAdmin = $state(null);
-
-  const unsubscribe = role.subscribe((value) => {
-    isAdmin = value;
-  });
-
-  const fetchProfile = async () => {
-    try {
-      userID = localStorage.getItem("userID");
-
-      if (!userID) return;
-
-      const response = await fetch(`${API_ENDPOINTS.PROFILE}/${userID}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-
-      const data = await response.json();
-      user = data;
-    } catch (error) {
-      console.error("Fetching profile failed:", error);
-    }
-
-    // get registered events
-    try {
-      const token = $auth;
-      const res = await fetch(`${API_ENDPOINTS.USER_EVENTS}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-      });
-      const registeredData = await res.json();
-      registeredEvents = registeredData || [];
-    } catch (error) {
-      console.error("Error fetching registered events:", error);
-    }
-  };
-
-  onMount(async () => {
-    await fetchProfile();
-    role.init();
-    const fetchStatus = async () => {
-      isAdmin = $role;
-    };
-    fetchStatus();
-    const token = $auth;
-    if (!token) {
-      goto("/login");
-    }
-    if (isAdmin === "true") {
-      goto("/admin");
-    }
-  });
-
-  fetchProfile();
-
+  // Get registered events
   try {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
+    const token = $auth;
     const res = await fetch(`${API_ENDPOINTS.USER_EVENTS}`, {
       method: "POST",
       headers: {
@@ -114,8 +55,19 @@ const fetchProfile = async () => {
   }
 };
 
-onMount(() => {
-  fetchProfile();
+onMount(async () => {
+  await fetchProfile();
+  role.init();
+
+  const token = $auth;
+  if (!token) {
+    goto("/login");
+    return;
+  }
+
+  if ($role === "true") {
+    goto("/admin");
+  }
 });
 
 function getInitials(name) {
@@ -128,7 +80,7 @@ function getInitials(name) {
 }
 
 function handleLogout() {
-  if (!browser) return;
+  if (typeof window === "undefined") return;
 
   localStorage.removeItem("token");
   localStorage.removeItem("userID");
