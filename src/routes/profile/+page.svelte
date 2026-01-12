@@ -79,14 +79,26 @@ function getInitials(name) {
     .join("");
 }
 
-function handleLogout() {
+async function handleLogout() {
   if (typeof window === "undefined") return;
 
-  localStorage.removeItem("token");
-  localStorage.removeItem("userID");
-  localStorage.removeItem("role");
-  auth.logout();
-  window.location.href = "/";
+  try {
+    await fetch(`${API_ENDPOINTS.LOGOUT}`, {
+      method: "POST",
+      credentials: "include",
+    }).catch(() => {});
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("userID");
+    localStorage.removeItem("role");
+
+    auth.logout();
+
+    await goto("/login");
+  } catch (error) {
+    console.error("Logout error:", error);
+    window.location.href = "/login";
+  }
 }
 </script>
 
