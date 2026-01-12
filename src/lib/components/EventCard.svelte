@@ -107,8 +107,23 @@ async function handleRegister(id: any) {
     </div>
 
     <div class="mt-auto">
-      <!-- If event is in past dont show register button -->
-      {#if !processDate(eventDate).isPast && !isAdmin && loggedIn}
+      {#if !loggedIn}
+        <Button
+          class="w-full bg-white/5 text-white border border-white/10 cursor-not-allowed"
+          disabled
+        >
+          Login to Register
+        </Button>
+      {:else if processDate(eventDate).isPast}
+        <!-- Event is past: show nothing -->
+      {:else if isAdmin}
+        <a
+          href={`/${eventId}`}
+          class="text-sm text-primary hover:underline"
+        >
+          View registrations
+        </a>
+      {:else}
         {#if !registered}
           <Button
             class="w-full bg-white/5 hover:bg-primary hover:text-white text-white border border-white/10 transition-all duration-300 group/btn"
@@ -121,16 +136,13 @@ async function handleRegister(id: any) {
           </Button>
         {:else}
           <Button
-            class="w-full bg-green-600 hover:bg-green-700 text-white border border-white/10 transition-all duration-300 cursor-default"
+            class="w-full bg-green-600 text-white border border-white/10 cursor-default"
             disabled
           >
             Registered
             <Check class="w-4 h-4 ml-2" />
           </Button>
         {/if}
-      {/if}
-      {#if isAdmin}
-        <a href={`/${eventId}`}>View registrations</a>
       {/if}
     </div>
   </div>
