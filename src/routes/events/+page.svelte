@@ -9,6 +9,10 @@
   let pastEvents = $state([]);
   let upcomingEvents = $state([]);
   let registeredEvents = $state([]);
+  let loggedIn = $state(false);
+  let token = $state(null);
+
+  token = $auth;
 
   async function getEvents() {
     try {
@@ -53,7 +57,10 @@
 
   onMount(() => {
     getEvents();
-    getRegisteredEvents();
+    if (token) {
+      loggedIn = true;
+      getRegisteredEvents();
+    }
   });
 </script>
 
@@ -77,7 +84,11 @@
     {/if}
     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
       {#each upcomingEvents as event}
-        <EventCard {...event} registered={false} />
+        <EventCard
+          {...event}
+          registered={loggedIn ? registeredEvents.includes(event._id) : false}
+          {loggedIn}
+        />
       {/each}
     </div>
   </section>
@@ -93,10 +104,7 @@
 
     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
       {#each pastEvents as event}
-        <EventCard
-          {...event}
-          registered={registeredEvents.includes(event._id)}
-        />
+        <EventCard {...event} registered={true} />
       {/each}
     </div>
   </section>

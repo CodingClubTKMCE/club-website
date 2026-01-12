@@ -4,6 +4,7 @@
 
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/stores/auth";
+  import { role } from "$lib/stores/role";
   import z from "zod";
 
   let email = $state("");
@@ -39,6 +40,7 @@
           await localStorage.setItem("role", data.user.isAdmin);
           auth.login(data.token);
           if (data.user.isAdmin) {
+            role.login(data.user.isAdmin);
             goto("/admin");
           } else {
             goto("/profile");

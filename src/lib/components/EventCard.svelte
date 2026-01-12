@@ -13,6 +13,7 @@
     link?: string;
     registered: boolean;
     isAdmin: boolean;
+    loggedIn: boolean;
   }
 
   let {
@@ -24,6 +25,7 @@
     link = "#",
     registered,
     isAdmin,
+    loggedIn,
   }: Props = $props();
 
   let message = $state("");
@@ -112,27 +114,27 @@
 
     <div class="mt-auto">
       <!-- If event is in past dont show register button -->
-      <!-- {#if !processDate(eventDate).isPast && !isAdmin} -->
-      {#if !registered}
-        <Button
-          class="w-full bg-white/5 hover:bg-primary hover:text-white text-white border border-white/10 transition-all duration-300 group/btn"
-          onclick={() => handleRegister(eventId)}
-        >
-          Register Now
-          <ArrowRight
-            class="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform"
-          />
-        </Button>
-      {:else}
-        <Button
-          class="w-full bg-green-600 hover:bg-green-700 text-white border border-white/10 transition-all duration-300 cursor-default"
-          disabled
-        >
-          Registered
-          <Check class="w-4 h-4 ml-2" />
-        </Button>
+      {#if !processDate(eventDate).isPast && !isAdmin && loggedIn}
+        {#if !registered}
+          <Button
+            class="w-full bg-white/5 hover:bg-primary hover:text-white text-white border border-white/10 transition-all duration-300 group/btn"
+            onclick={() => handleRegister(eventId)}
+          >
+            Register Now
+            <ArrowRight
+              class="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform"
+            />
+          </Button>
+        {:else}
+          <Button
+            class="w-full bg-green-600 hover:bg-green-700 text-white border border-white/10 transition-all duration-300 cursor-default"
+            disabled
+          >
+            Registered
+            <Check class="w-4 h-4 ml-2" />
+          </Button>
+        {/if}
       {/if}
-      <!-- {/if} -->
       {#if isAdmin}
         <a href={`/${eventId}`}>View registrations</a>
       {/if}

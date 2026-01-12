@@ -1,34 +1,81 @@
 <script lang="ts">
-// @ts-nocheck
-import { browser } from "$app/environment";
-import { API_ENDPOINTS } from "$lib/api";
-import EventCard from "$lib/components/EventCard.svelte";
-import { auth } from "$lib/stores/auth";
-import { onMount } from "svelte";
+  //@ts-nocheck
+  import { goto } from "$app/navigation";
+  import { API_ENDPOINTS } from "$lib/api";
+  import EventCard from "$lib/components/EventCard.svelte";
+  import { auth } from "$lib/stores/auth";
+  import { role } from "$lib/stores/role";
+  import { onMount } from "svelte";
 
-let userID = $state("");
-let user = $state(null);
-let registeredEvents = $state([]);
-
-const fetchProfile = async () => {
-  if (!browser) return; // Guard against SSR
-
-  try {
-    const storedUserID = localStorage.getItem("userID");
-    if (!storedUserID) return;
-
-    userID = storedUserID;
-
-    const response = await fetch(`${API_ENDPOINTS.PROFILE}/${userID}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-
-    user = await response.json();
-  } catch (error) {
-    console.error("Fetching profile failed:", error);
+  interface User {
+    name: string;
+    year: number;
+    branch: string;
+    emailID: string;
   }
+
+  let userID = $state("");
+  let user = $state<User | null>(null);
+  let registeredEvents = $state([]);
+  let isAdmin = $state(null);
+
+  const unsubscribe = role.subscribe((value) => {
+    isAdmin = value;
+  });
+
+  const fetchProfile = async () => {
+    try {
+      userID = localStorage.getItem("userID");
+
+      if (!userID) return;
+
+      const response = await fetch(`${API_ENDPOINTS.PROFILE}/${userID}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      const data = await response.json();
+      user = data;
+    } catch (error) {
+      console.error("Fetching profile failed:", error);
+    }
+
+    // get registered events
+    try {
+      const token = $auth;
+      const res = await fetch(`${API_ENDPOINTS.USER_EVENTS}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      });
+      const registeredData = await res.json();
+      registeredEvents = registeredData || [];
+    } catch (error) {
+      console.error("Error fetching registered events:", error);
+    }
+  };
+
+  onMount(async () => {
+    await fetchProfile();
+    role.init();
+    const fetchStatus = async () => {
+      isAdmin = $role;
+    };
+    fetchStatus();
+    const token = $auth;
+    if (!token) {
+      goto("/login");
+    }
+    if (isAdmin === "true") {
+      goto("/admin");
+    }
+  });
+
+  fetchProfile();
 
   try {
     const token = localStorage.getItem("token");
@@ -150,7 +197,7 @@ function getInitials(name) {
     </h1>
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {#each registeredEvents as event}
-        <EventCard {...event} />
+        <EventCard {...event} loggedIn={false} />
       {/each}
     </section>
 
@@ -158,13 +205,12 @@ function getInitials(name) {
     <div class="mt-12">
       <button
         onclick={() => {
-          if (browser) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("userID");
-            localStorage.removeItem("role");
-            auth.logout();
-            window.location.href = "/";
-          }
+          localStorage.removeItem("token");
+          localStorage.removeItem("userID");
+          localStorage.removeItem("role");
+          auth.logout();
+          role.logout();
+          window.location.href = "/";
         }}
         class="px-6 py-2 rounded-full bg-red-600/80 hover:bg-red-600 transition text-sm"
       >
