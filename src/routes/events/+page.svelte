@@ -1,67 +1,67 @@
 <script lang="ts">
-  //@ts-nocheck
-  import EventCard from "$lib/components/EventCard.svelte";
-  import { API_ENDPOINTS } from "$lib/api";
-  import { onMount } from "svelte";
-  import { auth } from "$lib/stores/auth";
+// @ts-nocheck
+import { API_ENDPOINTS } from "$lib/api";
+import EventCard from "$lib/components/EventCard.svelte";
+import { auth } from "$lib/stores/auth";
+import { onMount } from "svelte";
 
-  let events = $state([]);
-  let pastEvents = $state([]);
-  let upcomingEvents = $state([]);
-  let registeredEvents = $state([]);
-  let loggedIn = $state(false);
-  let token = $state(null);
+let events = $state([]);
+let pastEvents = $state([]);
+let upcomingEvents = $state([]);
+let registeredEvents = $state([]);
+let loggedIn = $state(false);
+let token = $state(null);
 
-  token = $auth;
+token = $auth;
 
-  async function getEvents() {
-    try {
-      const response = await fetch(API_ENDPOINTS.EVENT);
-      const data = await response.json();
-      events = data;
-      events.map((event) => {
-        if (isUpcoming(event.eventDate)) {
-          upcomingEvents.push(event);
-        } else {
-          pastEvents.push(event);
-        }
-      });
-    } catch (error) {
-      console.error("Error fetching events:", error);
-    }
+async function getEvents() {
+  try {
+    const response = await fetch(API_ENDPOINTS.EVENT);
+    const data = await response.json();
+    events = data;
+    events.map((event) => {
+      if (isUpcoming(event.eventDate)) {
+        upcomingEvents.push(event);
+      } else {
+        pastEvents.push(event);
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching events:", error);
   }
+}
 
-  function isUpcoming(eventDate) {
-    const eventDateObj = new Date(eventDate);
-    const currentDate = new Date();
-    return eventDateObj >= currentDate;
+function isUpcoming(eventDate) {
+  const eventDateObj = new Date(eventDate);
+  const currentDate = new Date();
+  return eventDateObj >= currentDate;
+}
+
+async function getRegisteredEvents() {
+  try {
+    const token = $auth;
+    const response = await fetch(API_ENDPOINTS.REGISTERED_EVENTS, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+    });
+    const data = await response.json();
+    registeredEvents = data;
+  } catch (error) {
+    console.error("Error fetching registered events:", error);
   }
+}
 
-  async function getRegisteredEvents() {
-    try {
-      const token = $auth;
-      const response = await fetch(API_ENDPOINTS.REGISTERED_EVENTS, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-      });
-      const data = await response.json();
-      registeredEvents = data;
-    } catch (error) {
-      console.error("Error fetching registered events:", error);
-    }
+onMount(() => {
+  getEvents();
+  if (token || localStorage.getItem("token") != null) {
+    loggedIn = true;
+    getRegisteredEvents();
   }
-
-  onMount(() => {
-    getEvents();
-    if (token) {
-      loggedIn = true;
-      getRegisteredEvents();
-    }
-  });
+});
 </script>
 
 <svelte:head>
@@ -72,9 +72,7 @@
   <!-- Upcoming Events -->
   <section class="mb-20">
     <div class="flex items-center gap-2 mb-8">
-      <h1
-        class="text-3xl md:text-4xl font-bold text-white border-b-4 border-blue-500 pb-1 inline-block"
-      >
+      <h1 class="text-3xl md:text-4xl font-bold text-white border-b-4 border-blue-500 pb-1 inline-block">
         Upcoming Events
       </h1>
     </div>
@@ -95,9 +93,7 @@
   <!-- Past events -->
   <section class="mb-20">
     <div class="flex items-center gap-2 mb-8">
-      <h1
-        class="text-3xl md:text-4xl font-bold text-white border-b-4 border-blue-500 pb-1 inline-block"
-      >
+      <h1 class="text-3xl md:text-4xl font-bold text-white border-b-4 border-blue-500 pb-1 inline-block">
         Past Events
       </h1>
     </div>
