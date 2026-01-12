@@ -178,7 +178,7 @@ const register = async () => {
             type="phoneno"
             id="phoneno"
             bind:value={phoneNo}
-            placeholder="+91()"
+            placeholder="Enter phone number"
             class="w-full bg-[#1a1a1a] border-none rounded-lg py-3 px-4 text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary transition-all"
           />
         </div>
