@@ -1,17 +1,35 @@
 <script lang="ts">
-  //@ts-nocheck
-  import { goto } from "$app/navigation";
-  import { API_ENDPOINTS } from "$lib/api";
-  import EventCard from "$lib/components/EventCard.svelte";
-  import { auth } from "$lib/stores/auth";
-  import { role } from "$lib/stores/role";
-  import { onMount } from "svelte";
+// @ts-nocheck
+import { goto } from "$app/navigation";
+import { API_ENDPOINTS } from "$lib/api";
+import EventCard from "$lib/components/EventCard.svelte";
+import { auth } from "$lib/stores/auth";
+import { role } from "$lib/stores/role";
+import { onMount } from "svelte";
 
-  interface User {
-    name: string;
-    year: number;
-    branch: string;
-    emailID: string;
+let userID = $state("");
+let user = $state(null);
+let registeredEvents = $state([]);
+
+const fetchProfile = async () => {
+  if (!browser) return; // Guard against SSR
+
+  try {
+    const storedUserID = localStorage.getItem("userID");
+    if (!storedUserID) return;
+
+    userID = storedUserID;
+
+    const response = await fetch(`${API_ENDPOINTS.PROFILE}/${userID}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+
+    user = await response.json();
+  } catch (error) {
+    console.error("Fetching profile failed:", error);
+    return;
   }
 
   let userID = $state("");
@@ -77,14 +95,47 @@
 
   fetchProfile();
 
-  function getInitials(name) {
-    if (!name) return "CC";
-    return name
-      .split(" ")
-      .slice(0, 2)
-      .map((n) => n[0].toUpperCase())
-      .join("");
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const res = await fetch(`${API_ENDPOINTS.USER_EVENTS}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+    });
+
+    registeredEvents = (await res.json()) || [];
+  } catch (error) {
+    console.error("Error fetching registered events:", error);
   }
+};
+
+onMount(() => {
+  fetchProfile();
+});
+
+function getInitials(name) {
+  if (!name) return "CC";
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((n) => n[0].toUpperCase())
+    .join("");
+}
+
+function handleLogout() {
+  if (!browser) return;
+
+  localStorage.removeItem("token");
+  localStorage.removeItem("userID");
+  localStorage.removeItem("role");
+  auth.logout();
+  window.location.href = "/";
+}
 </script>
 
 <!-- MAIN PAGE -->
@@ -93,9 +144,7 @@
     <!-- Greeting + user summary -->
     <section class="grid grid-cols-1 md:grid-cols-[2fr,1.2fr] gap-8 mb-10">
       <!-- LEFT PANEL -->
-      <div
-        class=" from-zinc-900/90 to-black border border-zinc-800/80 rounded-3xl p-8 shadow-xl"
-      >
+      <div class="from-zinc-900/90 to-black border border-zinc-800/80 rounded-3xl p-8 shadow-xl">
         <h1 class="text-3xl font-semibold tracking-tight mb-2">
           {#if user}
             <p class="text-xs uppercase tracking-[0.22em] text-gray-500 mb-3">
@@ -103,7 +152,7 @@
             </p>
             Welcome back,
             <span
-              class=" from-purple-400 via-fuchsia-400 to-purple-500 bg-clip-text text-transparent"
+              class="from-purple-400 via-fuchsia-400 to-purple-500 bg-clip-text text-transparent"
             >
               {user.name}
             </span>
@@ -116,19 +165,15 @@
         <!-- QUICK STATS -->
         {#if user}
           <p class="text-sm text-gray-400 mb-6 max-w-md">
-            Here’s a quick overview of your profile and event activity.
+            Here's a quick overview of your profile and event activity.
           </p>
           <div class="grid grid-cols-3 gap-4 text-sm">
-            <div
-              class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3"
-            >
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3">
               <p class="text-gray-500 mb-1">Year</p>
               <p class="text-gray-100 font-medium">{user.year}</p>
             </div>
 
-            <div
-              class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3"
-            >
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3">
               <p class="text-gray-500 mb-1">Branch</p>
               <p class="text-gray-100 font-medium">{user.branch}</p>
             </div>
@@ -137,15 +182,11 @@
       </div>
 
       <!-- RIGHT PROFILE CARD -->
-      <div
-        class="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 flex flex-col"
-      >
+      <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 flex flex-col">
         {#if user}
           <div class="flex items-center gap-4 mb-6">
             <!-- Avatar -->
-            <div
-              class="h-16 w-16 rounded-full from-purple-600 via-fuchsia-600 to-purple-800 flex items-center justify-center text-xl font-semibold shadow-xl"
-            >
+            <div class="h-16 w-16 rounded-full from-purple-600 via-fuchsia-600 to-purple-800 flex items-center justify-center text-xl font-semibold shadow-xl">
               {getInitials(user.name)}
             </div>
 
@@ -179,9 +220,7 @@
     </section>
 
     <!-- Lower section: placeholder for events or registrations -->
-    <h1
-      class="my-8 text-2xl md:text-4xl underline decoration-primary text-center"
-    >
+    <h1 class="my-8 text-2xl md:text-4xl underline decoration-primary text-center">
       Registered Events
     </h1>
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -193,14 +232,7 @@
     <!-- Logout -->
     <div class="mt-12">
       <button
-        onclick={() => {
-          localStorage.removeItem("token");
-          localStorage.removeItem("userID");
-          localStorage.removeItem("role");
-          auth.logout();
-          role.logout();
-          window.location.href = "/";
-        }}
+        onclick={handleLogout}
         class="px-6 py-2 rounded-full bg-red-600/80 hover:bg-red-600 transition text-sm"
       >
         Logout
