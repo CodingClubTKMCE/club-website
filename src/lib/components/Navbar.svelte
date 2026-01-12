@@ -175,6 +175,18 @@
         >
           Profile
         </Button>
+        <Button
+          onclick={() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userID");
+            localStorage.removeItem("role");
+            auth.logout();
+            role.logout();
+            window.location.href = "/";
+          }}
+          class="w-full justify-center py-6 text-lg border-white/20 text-black hover:text-white hover:bg-white/10"
+          >Logout</Button
+        >
       {/if}
     </div>
   </div>
