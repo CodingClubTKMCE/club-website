@@ -1,6 +1,5 @@
 <script lang="ts">
 // @ts-nocheck
-import { browser } from "$app/environment";
 import { API_ENDPOINTS } from "$lib/api";
 import EventCard from "$lib/components/EventCard.svelte";
 import { auth } from "$lib/stores/auth";
@@ -12,9 +11,10 @@ let registeredEvents = $state([]);
 
 const fetchProfile = async () => {
   try {
-    userID = localStorage.getItem("userID");
+    const storedUserID = localStorage.getItem("userID");
+    if (!storedUserID) return;
 
-    if (!userID) return;
+    userID = storedUserID;
 
     const response = await fetch(`${API_ENDPOINTS.PROFILE}/${userID}`, {
       method: "GET",
@@ -22,17 +22,15 @@ const fetchProfile = async () => {
       credentials: "include",
     });
 
-    const data = await response.json();
-    user = data;
+    user = await response.json();
   } catch (error) {
     console.error("Fetching profile failed:", error);
   }
 
-  // get registered events
   try {
-    onMount(() => {
-      const token = localStorage.getItem("token");
-    });
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     const res = await fetch(`${API_ENDPOINTS.USER_EVENTS}`, {
       method: "POST",
       headers: {
@@ -41,16 +39,16 @@ const fetchProfile = async () => {
       },
       credentials: "include",
     });
-    const registeredData = await res.json();
-    registeredEvents = registeredData || [];
+
+    registeredEvents = (await res.json()) || [];
   } catch (error) {
     console.error("Error fetching registered events:", error);
   }
 };
 
-onMount(() => fetchProfile());
-
-fetchProfile();
+onMount(() => {
+  fetchProfile();
+});
 
 function getInitials(name) {
   if (!name) return "CC";
