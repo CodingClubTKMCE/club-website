@@ -49,10 +49,9 @@
     class="bg-[#1a1a1a] rounded-lg px-4 py-3 min-w-[180px] flex items-center justify-between gap-3"
   >
     <div class="flex-1 text-left">
-      <h3 class="text-sm font-semibold text-white leading-tight">
+      <h3 class="text-sm font-semibold text-white leading-tight my-2">
         {name}
       </h3>
-      <p class="text-xs text-gray-400">{role}</p>
     </div>
     {#if linkedin}
       <a

@@ -10,6 +10,7 @@
   let name = $state("");
   let branch = $state("");
   let year = $state("");
+  let phoneNo = $state("");
   let error = $state(false);
   let errorMessage = $state("");
 
@@ -19,6 +20,7 @@
     name: z.string().min(1, "Name is required"),
     branch: z.string().min(1, "Branch is required"),
     year: z.string().min(1, "Year is required"),
+    phoneNo: z.string().min(10, "Phone number must be at least 10 digits long"),
   });
 
   const register = async () => {
@@ -34,7 +36,7 @@
     error = false;
     errorMessage = "";
     try {
-      schema.parse({ email, password, name, branch, year });
+      schema.parse({ email, password, name, branch, year, phoneNo });
       try {
         const res = await fetch(`${API_ENDPOINTS.REGISTER}`, {
           method: "POST",
@@ -48,6 +50,7 @@
             emailID: email,
             year,
             password,
+            phoneNo,
           }),
         });
 
@@ -167,6 +170,21 @@
             type="email"
             id="email"
             bind:value={email}
+            placeholder="example@gmail.com"
+            class="w-full bg-[#1a1a1a] border-none rounded-lg py-3 px-4 text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary transition-all"
+          />
+        </div>
+
+        <!-- Phone Number -->
+        <div class="space-y-2">
+          <label for="email" class="text-sm font-medium text-gray-400"
+            >Phone Number:
+          </label>
+          <input
+            required
+            type="phoneno"
+            id="phoneno"
+            bind:value={phoneNo}
             placeholder="example@gmail.com"
             class="w-full bg-[#1a1a1a] border-none rounded-lg py-3 px-4 text-white placeholder:text-gray-600 focus:ring-1 focus:ring-primary transition-all"
           />

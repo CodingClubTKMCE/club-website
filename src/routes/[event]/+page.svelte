@@ -12,6 +12,7 @@
     branch: string;
     eventName: string;
     registeredAt: string;
+    phoneNo: string;
   }
 
   let registrations: Registration[] = $state([]);
@@ -58,7 +59,7 @@
             <tr class="text-gray-400 text-[11px] uppercase tracking-wide">
               <th class="px-4 py-2 text-left">User</th>
               <th class="px-4 py-2 text-left">Year / Branch</th>
-              <th class="px-4 py-2 text-left">Event</th>
+              <th class="px-4 py-2 text-left">PhoneNo</th>
               <th class="px-4 py-2 text-right">When</th>
             </tr>
           </thead>
@@ -84,7 +85,7 @@
                     {reg.year} • {reg.branch}
                   </td>
                   <td class="px-4 py-2 text-gray-300">
-                    {reg.eventName}
+                    {reg.phoneNo}
                   </td>
                   <td class="px-4 py-2 text-gray-400 text-right">
                     {reg.registeredAt}
