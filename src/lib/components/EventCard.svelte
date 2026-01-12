@@ -79,7 +79,7 @@ async function handleRegister(id: any) {
 
 <div class="group relative bg-[#121212] border border-white/5 rounded-2xl overflow-hidden hover:border-primary/30 transition-all duration-300 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] flex flex-col h-full">
   <!-- eventImg Container -->
-  <div class="relative h-48 overflow-hidden">
+  <div class="relative h-96 overflow-hidden">
     <div class="absolute inset-0 from-[#121212] to-transparent z-10 opacity-60">
     </div>
     <img
