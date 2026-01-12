@@ -1,178 +1,176 @@
 <script lang="ts">
 // @ts-nocheck
+import { goto } from "$app/navigation";
 import { API_ENDPOINTS } from "$lib/api";
-import EventCard from "$lib/components/EventCard.svelte";
+import { Button } from "$lib/components/ui/button/index.js";
 import { auth } from "$lib/stores/auth";
+import { role } from "$lib/stores/role";
 import { onMount } from "svelte";
+import { z } from "zod";
 
-let userID = $state("");
-let user = $state(null);
-let registeredEvents = $state([]);
+let email = $state("");
+let password = $state("");
+let error = $state(false);
+let errorMessage = $state("");
+let isLoading = $state(false);
 
-const fetchProfile = async () => {
-  // Check if we're in browser using typeof window
-  if (typeof window === "undefined") return;
-
-  try {
-    const storedUserID = localStorage.getItem("userID");
-    if (!storedUserID) return;
-
-    userID = storedUserID;
-
-    const response = await fetch(`${API_ENDPOINTS.PROFILE}/${userID}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-
-    user = await response.json();
-  } catch (error) {
-    console.error("Fetching profile failed:", error);
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    const res = await fetch(`${API_ENDPOINTS.USER_EVENTS}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-    });
-
-    registeredEvents = (await res.json()) || [];
-  } catch (error) {
-    console.error("Error fetching registered events:", error);
-  }
-};
-
-onMount(() => {
-  fetchProfile();
+const schema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
-function getInitials(name) {
-  if (!name) return "CC";
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((n) => n[0].toUpperCase())
-    .join("");
-}
+onMount(() => {
+  // If already logged in, redirect to profile
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    const userRole = localStorage.getItem("role");
 
-function handleLogout() {
+    if (token) {
+      if (userRole === "true") {
+        goto("/admin");
+      } else {
+        goto("/profile");
+      }
+    }
+  }
+});
+
+const login = async () => {
   if (typeof window === "undefined") return;
 
-  localStorage.removeItem("token");
-  localStorage.removeItem("userID");
-  localStorage.removeItem("role");
-  auth.logout();
-  window.location.href = "/";
-}
+  error = false;
+  errorMessage = "";
+  isLoading = true;
+
+  try {
+    schema.parse({ email, password });
+
+    try {
+      const response = await fetch(API_ENDPOINTS.LOGIN, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ emailID: email, password: password }),
+      });
+
+      const data = await response.json();
+
+      if (data.message === "Login successful") {
+        localStorage.setItem("userID", data.user.id);
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.user.isAdmin ? "true" : "false");
+
+        auth.login(data.token);
+
+        if (data.user.isAdmin) {
+          role.login(data.user.isAdmin);
+          await goto("/admin");
+        } else {
+          await goto("/profile");
+        }
+      } else {
+        errorMessage = data.message;
+        error = true;
+        isLoading = false;
+        setTimeout(() => {
+          error = false;
+        }, 3000);
+      }
+    } catch (err) {
+      console.error("Login failed:", err);
+      error = true;
+      errorMessage = "An error occurred during login. Please try again.";
+      isLoading = false;
+      setTimeout(() => {
+        error = false;
+      }, 3000);
+    }
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      console.log(err.issues[0].message);
+      error = true;
+      errorMessage = err.issues[0].message;
+      isLoading = false;
+      setTimeout(() => {
+        error = false;
+      }, 3000);
+    }
+  }
+};
 </script>
 
-<!-- MAIN PAGE -->
-<div class="min-h-screen bg-black text-gray-100 pt-32 pb-16 px-4">
-  <div class="max-w-6xl mx-auto">
-    <!-- Greeting + user summary -->
-    <section class="grid grid-cols-1 md:grid-cols-[2fr,1.2fr] gap-8 mb-10">
-      <!-- LEFT PANEL -->
-      <div class="from-zinc-900/90 to-black border border-zinc-800/80 rounded-3xl p-8 shadow-xl">
-        <h1 class="text-3xl font-semibold tracking-tight mb-2">
-          {#if user}
-            <p class="text-xs uppercase tracking-[0.22em] text-gray-500 mb-3">
-              Dashboard
-            </p>
-            Welcome back,
-            <span
-              class="from-purple-400 via-fuchsia-400 to-purple-500 bg-clip-text text-transparent"
-            >
-              {user.name}
-            </span>
-          {:else}
-            <!-- skeleton  -->
-            <span class="text-gray-500 animate-pulse">---</span>
-          {/if}
-        </h1>
+<svelte:head>
+  <title>Login | Coding Club TKMCE</title>
+</svelte:head>
 
-        <!-- QUICK STATS -->
-        {#if user}
-          <p class="text-sm text-gray-400 mb-6 max-w-md">
-            Here's a quick overview of your profile and event activity.
-          </p>
-          <div class="grid grid-cols-3 gap-4 text-sm">
-            <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3">
-              <p class="text-gray-500 mb-1">Year</p>
-              <p class="text-gray-100 font-medium">{user.year}</p>
-            </div>
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden px-4">
+  <div class="w-full max-w-md relative z-10">
+    <div class="mb-12">
+      <h1 class="text-4xl font-bold text-white mb-2">Login</h1>
+      <p class="text-green-500 font-medium"># Hi, Welcome Back</p>
+    </div>
 
-            <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3">
-              <p class="text-gray-500 mb-1">Branch</p>
-              <p class="text-gray-100 font-medium">{user.branch}</p>
-            </div>
-          </div>
-        {/if}
+    {#if error}
+      <div class="bg-red-500/10 border border-red-500/50 rounded-xl p-4 mb-6">
+        <p class="text-red-400 text-sm">{errorMessage}</p>
+      </div>
+    {/if}
+
+    <form on:submit|preventDefault={login} class="space-y-6">
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
+          Email Address
+        </label>
+        <input
+          id="email"
+          type="email"
+          bind:value={email}
+          class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition"
+          placeholder="you@example.com"
+          required
+          disabled={isLoading}
+        />
       </div>
 
-      <!-- RIGHT PROFILE CARD -->
-      <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 flex flex-col">
-        {#if user}
-          <div class="flex items-center gap-4 mb-6">
-            <!-- Avatar -->
-            <div class="h-16 w-16 rounded-full from-purple-600 via-fuchsia-600 to-purple-800 flex items-center justify-center text-xl font-semibold shadow-xl">
-              {getInitials(user.name)}
-            </div>
-
-            <div>
-              <p class="text-xs uppercase tracking-[0.22em] text-gray-500">
-                Member Profile
-              </p>
-              <p class="text-lg font-semibold text-gray-100">{user.name}</p>
-              <p class="text-xs text-gray-400 mt-1">
-                {user.branch}, Year {user.year}
-              </p>
-            </div>
-          </div>
-
-          <!-- Meta Info -->
-          <div class="space-y-2 text-xs text-gray-400 mb-6">
-            <p class="flex items-center gap-2">
-              <span class="h-1.5 w-1.5 rounded-full bg-purple-500"></span>
-              {user.emailID}
-            </p>
-            <p class="flex items-center gap-2">
-              <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-              Status:
-              <span class="text-gray-200 font-medium ml-1">Active Member</span>
-            </p>
-          </div>
-        {:else}
-          <div class="animate-pulse text-gray-500">----</div>
-        {/if}
+      <div>
+        <label
+          for="password"
+          class="block text-sm font-medium text-gray-300 mb-2"
+        >
+          Password
+        </label>
+        <input
+          id="password"
+          type="password"
+          bind:value={password}
+          class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition"
+          placeholder="••••••••"
+          required
+          disabled={isLoading}
+        />
       </div>
-    </section>
 
-    <!-- Lower section: placeholder for events or registrations -->
-    <h1 class="my-8 text-2xl md:text-4xl underline decoration-primary text-center">
-      Registered Events
-    </h1>
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {#each registeredEvents as event}
-        <EventCard {...event} />
-      {/each}
-    </section>
-
-    <!-- Logout -->
-    <div class="mt-12">
-      <button
-        onclick={handleLogout}
-        class="px-6 py-2 rounded-full bg-red-600/80 hover:bg-red-600 transition text-sm"
+      <Button
+        type="submit"
+        disabled={isLoading}
+        class="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition"
       >
-        Logout
-      </button>
+        {isLoading ? "Logging in..." : "Login"}
+      </Button>
+    </form>
+
+    <div class="mt-6 text-center">
+      <p class="text-gray-400 text-sm">
+        Don't have an account?
+        <a
+          href="/register"
+          class="text-green-500 hover:text-green-400 font-medium transition"
+        >
+          Register here
+        </a>
+      </p>
     </div>
   </div>
 </div>
