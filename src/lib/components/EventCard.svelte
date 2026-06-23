@@ -24,7 +24,7 @@ let {
   eventImg,
   link = "#",
   registered,
-  isAdmin,
+  isAdmin = false,
   loggedIn,
 }: Props = $props();
 

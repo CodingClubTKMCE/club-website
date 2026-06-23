@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { API_ENDPOINTS } from "$lib/api";
 
   // form state
@@ -14,6 +14,11 @@
   let loading = $state(false);
   let error = $state("");
   let success = $state("");
+  let token = $state<string | null>(null);
+
+  onMount(() => {
+    token = localStorage.getItem("token");
+  });
 
   const validate = () => {
     if (!eventName.trim()) return "Event name is required";

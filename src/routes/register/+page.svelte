@@ -65,8 +65,8 @@ const register = async () => {
           error = false;
         }, 3000);
       }
-    } catch (error) {
-      console.error("Registration failed:", error);
+    } catch (fetchError) {
+      console.error("Registration failed:", fetchError);
       error = true;
       errorMessage = "An error occurred during registration. Please try again.";
       setTimeout(() => {
@@ -128,7 +128,7 @@ const register = async () => {
             <option value="AI">AI</option>
             <option value="ER">ER</option>
             <option value="EEE">EEE</option>
-            <option value="EEE">ECE</option>
+            <option value="ECE">ECE</option>
             <option value="Mech">Mechanical</option>
             <option value="Civil">Civil</option>
             <option value="Chem">Chemical</option>
@@ -175,7 +175,7 @@ const register = async () => {
           </label>
           <input
             required
-            type="phoneno"
+            type="tel"
             id="phoneno"
             bind:value={phoneNo}
             placeholder="Enter phone number"

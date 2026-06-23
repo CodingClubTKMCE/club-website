@@ -4,7 +4,6 @@
   import EventCard from "$lib/components/EventCard.svelte";
   import { Calendar } from "lucide-svelte";
   import { auth } from "$lib/stores/auth";
-  import { includes } from "zod";
   import { onMount } from "svelte";
 
   let events = $state([]);
