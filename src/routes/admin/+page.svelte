@@ -58,7 +58,10 @@
       isAdmin = $role;
     };
     fetchStatus();
-    if (!isAdmin || isAdmin === "false") {
+    if (
+            isAdmin !== "admin" &&
+            isAdmin !== "superadmin"
+    ) {
       goto("/profile");
     }
     getEvents();

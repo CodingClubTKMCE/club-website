@@ -10,6 +10,11 @@
   let isScrolled = $state(false);
   let isMobileMenuOpen = $state(false);
   let token: string | null = $state(null);
+  let userRole: string | null = $state(null);
+
+  const unsubscribeRole = role.subscribe((value) => {
+    userRole = value;
+  });
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -36,6 +41,9 @@
   });
 
   onMount(() => {
+    auth.init();
+    role.init();
+
     const handleScroll = () => {
       isScrolled = window.scrollY > 20;
     };
@@ -50,6 +58,7 @@
     return () => {
       window.removeEventListener("scroll", handleScroll);
       unsubscribe();
+      unsubscribeRole();
     };
   });
 </script>
@@ -99,11 +108,13 @@
         </Button>
       {:else}
         <Button
-          href="/profile"
-          variant="outline"
-          class="bg-white/5 text-white rounded-full px-6 shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all duration-300"
-          >Profile</Button
+                href={userRole === "admin" || userRole === "superadmin" ? "/admin": "/profile"}
+                variant="outline"
+                class="bg-white/5 text-white rounded-full px-6 shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all duration-300"
         >
+          {userRole === "admin" || userRole === "superadmin" ? "Admin" : "Profile"}
+
+        </Button>
         <Button
           onclick={() => {
             localStorage.removeItem("token");

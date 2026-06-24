@@ -26,7 +26,10 @@ onMount(() => {
     const userRole = localStorage.getItem("role");
 
     if (token) {
-      if (userRole === "true") {
+      if (
+              userRole === "admin" ||
+              userRole === "superadmin"
+      ) {
         goto("/admin");
       } else {
         goto("/profile");
@@ -60,12 +63,12 @@ const login = async () => {
       if (data.message === "Login successful") {
         localStorage.setItem("userID", data.user.id);
         localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.user.isAdmin ? "true" : "false");
+        localStorage.setItem("role", data.user.role);
+        role.login(data.user.role);
 
         auth.login(data.token);
 
-        if (data.user.isAdmin) {
-          role.login(data.user.isAdmin);
+        if (data.user.role === "admin" || data.user.role === "superadmin") {
           await goto("/admin");
         } else {
           await goto("/profile");

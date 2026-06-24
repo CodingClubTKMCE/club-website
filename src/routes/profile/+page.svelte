@@ -66,7 +66,7 @@ onMount(async () => {
   if (typeof window === "undefined") return;
 
   const token = localStorage.getItem("token");
-  const roleValue = localStorage.getItem("role");
+  const role = localStorage.getItem("role");
 
   // Check if user is logged in
   if (!token) {
@@ -75,9 +75,11 @@ onMount(async () => {
   }
 
   // Check if user is admin - redirect to admin page
-  if (roleValue === "true") {
-    await goto("/admin");
-    return;
+  if (
+          role === "admin" ||
+          role === "superadmin"
+  ) {
+    goto("/admin");
   }
 
   // Initialize role store
