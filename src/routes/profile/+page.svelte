@@ -83,7 +83,7 @@ onMount(async () => {
   }
 
   // Initialize role store
-  role.init();
+ // role.init();
 
   // Fetch profile data
   await fetchProfile();
