@@ -1,5 +1,5 @@
 <script lang="ts">
-import { API_BASE_URL } from "$lib/api";
+import { API_BASE_URL, API_ENDPOINTS } from "$lib/api";
 import { Button } from "$lib/components/ui/button/index.js";
 import { auth } from "$lib/stores/auth";
 import { ArrowRight, Calendar, Check, MapPin } from "lucide-svelte";
@@ -73,6 +73,45 @@ async function handleRegister(id: any) {
     }
   } catch (err) {
     console.error("Registration failed", err);
+  }
+}
+async function handleDelete() {
+  const token = $auth;
+
+  if (!confirm(`Are you sure you want to delete "${eventName}"?`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_ENDPOINTS.EVENT}${eventId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+    });
+
+    if (res.ok) {
+      message = "Event deleted successfully!";
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      const data = await res.json();
+      message = data.message || "Failed to delete event.";
+
+      setTimeout(() => {
+        message = "";
+      }, 3000);
+    }
+  } catch (err) {
+    console.error("Delete failed", err);
+    message = "Failed to delete event.";
+
+    setTimeout(() => {
+      message = "";
+    }, 3000);
   }
 }
 </script>
