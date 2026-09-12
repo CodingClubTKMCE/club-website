@@ -52,6 +52,41 @@
     goto("/admin/events/new");
   };
 
+  const handleDelete = async (eventId: string, eventName: string) => {
+  const token = localStorage.getItem("token");
+
+  const confirmed = confirm(
+    `Are you sure you want to delete "${eventName}"?`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_ENDPOINTS.EVENT}${eventId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      alert(data.message || "Failed to delete event.");
+      return;
+    }
+
+    alert("Event deleted successfully!");
+
+    window.location.reload();
+  } catch (error) {
+    console.error("Delete event failed:", error);
+    alert("Failed to delete event.");
+  }
+};
+
   onMount(() => {
     role.init();
     const fetchStatus = async () => {
@@ -155,13 +190,23 @@
                 >
                   <div class="text-right">
                     <a
-                      class="text-xs text-gray-400 px-6 py-2 rounded-lg border-gray-400"
-                      href={`/${event._id}`}>Registrations</a
+                      class="text-xs text-gray-400 px-6 py-2 rounded-lg border border-white/10 hover:text-white hover:border-primary/40 transition"
+                      href={`/${event._id}`}
                     >
+                      Registrations
+                    </a>
+
                     <p class="text-sm font-semibold text-white">
                       {event.registrations}
                     </p>
                   </div>
+
+                  <Button
+                    onclick={() => handleDelete(event._id, event.eventName)}
+                    class="bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 text-xs"
+                  >
+                    Delete
+                  </Button>
                 </div>
               </div>
             {/each}

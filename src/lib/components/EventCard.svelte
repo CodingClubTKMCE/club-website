@@ -156,12 +156,21 @@ async function handleDelete() {
       {:else if processDate(eventDate).isPast}
         <!-- Event is past: show nothing -->
       {:else if isAdmin}
-        <a
-          href={`/${eventId}`}
-          class="text-sm text-primary hover:underline"
-        >
-          View registrations
-        </a>
+        <div class="flex items-center justify-between gap-4">
+          <a
+            href={`/${eventId}`}
+            class="text-sm text-primary hover:underline"
+          >
+            View registrations
+          </a>
+
+          <Button
+            class="bg-red-600 hover:bg-red-700 text-white"
+            onclick={handleDelete}
+          >
+            Delete
+          </Button>
+        </div>
       {:else}
         {#if !registered}
           <Button
