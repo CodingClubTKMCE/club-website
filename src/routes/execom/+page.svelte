@@ -12,10 +12,10 @@
 
   const chiefCoordinators = [
     {
-      name: "Alan Saji",
+      name: "Rayah Ruquiah",
       role: "Chief Coordinator",
-      image: "/images/Alan.png",
-      linkedin: "https://www.linkedin.com/in/alansj",
+      image: "/images/Rayah.jpeg",
+      linkedin: "http://www.linkedin.com/in/rayahruquiah/",
     },
     {
       name: "Shikha Rajeev",
