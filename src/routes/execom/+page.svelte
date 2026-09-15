@@ -17,12 +17,6 @@
       image: "/images/Rayah.jpeg",
       linkedin: "http://www.linkedin.com/in/rayahruquiah/",
     },
-    {
-      name: "Shikha Rajeev",
-      role: "Chief Coordinator",
-      image: "/images/Shikha.png",
-      linkedin: "https://www.linkedin.com/in/shikha-rajeev-586808300",
-    },
   ];
 
   const programCore = [
