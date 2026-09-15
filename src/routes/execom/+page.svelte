@@ -21,22 +21,34 @@
 
   const programCore = [
     {
-      name: "Sivanandana",
+      name: "Michael",
       role: "ProgramCore",
-      image: "/images/Sivanandana.png",
+      image: "/images/Michael.jpeg",
       linkedin: "https://www.linkedin.com/in/sivanandana-j-p-33a763328",
     },
     {
       name: "Haya",
       role: "ProgramCore",
-      image: "/images/Haya.png",
+      image: "/images/Haya.jpeg",
       linkedin: "https://www.linkedin.com/in/haya-sreekumar-pillai-a2174a32a",
     },
     {
-      name: "Sreeram",
+      name: "Ann",
       role: "ProgramCore",
-      image: "/images/Sreeram.png",
-      linkedin: "https://www.linkedin.com/in/sreeram-paruvayakode-ab84a6332",
+      image: "/images/Ann.jpeg,
+      linkedin: "https://www.linkedin.com/in/ann-nova-966682380",
+    },
+    {
+      name: "Vinay",
+      role: "ProgramCore",
+      image: "/images/Vinay.jpeg,
+      linkedin: "https://www.linkedin.com/in/vinaysnairr/",
+    },
+    {
+      name: "Aaisha",
+      role: "ProgramCore",
+      image: "/images/Aaisha.jpeg,
+      linkedin: "http://www.linkedin.com/in/aaisha-sidhik-",
     },
   ];
 
