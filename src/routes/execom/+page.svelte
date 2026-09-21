@@ -52,27 +52,13 @@
     },
   ];
 
-  const programCoordinators = [
-    {
-      name: "Asiya",
-      role: "Program Coordinator",
-      image: "/images/Asiya.png",
-      linkedin: "https://www.linkedin.com/in/asiya-salam",
-    },
-    {
-      name: "Rayah",
-      role: "Program Coordinator",
-      image: "/images/Rayah.png",
-      linkedin: "https://www.linkedin.com/in/rayah-ruquiah-912880282",
-    },
-  ];
 
   const finance = [
     {
-      name: "Jobin",
+      name: "Kevin",
       role: "Finance Head",
-      image: "/images/Jobin.png",
-      linkedin: "https://www.linkedin.com/in/jobin-a-j-75b249324",
+      image: "/images/Kevin.png",
+      linkedin: "https://www.linkedin.com/in/kevin-reji-42b893218?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     },
   ];
 
