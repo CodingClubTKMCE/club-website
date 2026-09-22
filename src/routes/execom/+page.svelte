@@ -62,93 +62,93 @@
     },
   ];
 
-  const prTeam = [
+  const mediaTeam = [
     {
-      name: "Anish",
-      role: "Public Relations",
-      image: "/images/Anish.png",
+      name: "Siddharth",
+      role: "Media Team",
+      image: "/images/Siddharth.jpeg",
       linkedin: "https://www.linkedin.com/in/anish-ramdas-65ab14376",
     },
     {
-      name: "Sreya S",
-      role: "Public Relations",
-      image: "/images/Sreya S.png",
+      name: "Abhinand",
+      role: "Media Team",
+      image: "/images/Abhinand.jpeg",
       linkedin: "https://www.linkedin.com/in/sreya-s-aa6a2336b",
     },
     {
-      name: "Kevin",
-      role: " Public Relations",
-      image: "/images/Kevin.png",
-      linkedin: "https://www.linkedin.com/in/kevin-reji-42b893218/",
+      name: "Anushka",
+      role: " Media Team",
+      image: "/images/Anushka.jpeg",
+      linkedin: "http://www.linkedin.com/in/anushka-unmesh-a-82a2b6397?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     },
   ];
 
   const docTeam = [
     {
-      name: "Harisankar",
+      name: "Nikhil",
       role: "Documentation",
-      image: "/images/Harisankar.png",
-      linkedin: "https://www.linkedin.com/in/harisankar-s-0741b22a4",
+      image: "/images/Nikhil.jpeg",
+      linkedin: "https://www.linkedin.com/in/nikhil--johnson/",
     },
     {
-      name: "Shadha",
+      name: "Fahad",
       role: "Documentation",
-      image: "/images/Shadha.png",
-      linkedin: "https://www.linkedin.com/in/shadhashareef05",
+      image: "/images/Fahad.jpeg",
+      linkedin: "https://www.linkedin.com/in/fahad-s-rahuman-96612b36b?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     },
     {
-      name: "Sreya",
+      name: "Hafia",
       role: "Documentation",
-      image: "/images/Sreya M.png",
-      linkedin: "https://www.linkedin.com/in/sreya-maxwel-40b443328",
+      image: "/images/Hafia.jpeg",
+      linkedin: "https://www.linkedin.com/in/haifa-muhammed-ali-etp-489375380",
     },
   ];
 
   const designTeam = [
     {
-      name: "Dino",
+      name: "Saniya",
       role: "Design",
-      image: "/images/Dino.png",
-      linkedin: "https://www.linkedin.com/in/dino-saji-sam-",
+      image: "/images/Saniya.jpeg",
+      linkedin: "https://www.linkedin.com/in/saniya-jose-93407b328/",
     },
     {
-      name: "Angelina",
+      name: "Bhagath",
       role: "Design",
-      image: "/images/Angelina.png",
+      image: "/images/Bhagath.jpeg",
       linkedin: "https://www.linkedin.com/in/angelina-rose-9b312b324",
     },
     {
-      name: "Joshua",
+      name: "Sayooj",
       role: "Design",
-      image: "/images/Joshua.png",
-      linkedin: "https://www.linkedin.com/feed/",
+      image: "/images/Sayooj.jpeg",
+      linkedin: "https://www.linkedin.com/in/sayooj-op",
     },
     {
-      name: "Saniya",
+      name: "Gopika",
       role: "Design",
-      image: "/images/Saniya.png",
-      linkedin: "https://www.linkedin.com/in/saniya-jose-93407b328",
+      image: "/images/Gopika.jpeg",
+      linkedin: "https://www.linkedin.com/in/gopika-sanjay-28aa35375?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     },
   ];
 
   const technicalTeam = [
     {
-      name: "Swarag",
+      name: "Ankitha",
       role: "Technical",
-      image: "/images/Swarag.png",
-      linkedin: "https://www.linkedin.com/in/swarag-siby",
+      image: "/images/Ankitha.png",
+      linkedin: "https://www.linkedin.com/in/ankitha-s-4333863b5?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     },
     {
-      name: "Sreedhar",
+      name: "Athulyathej",
       role: "Technical",
-      image: "/images/Sreedhar.png",
-      linkedin: "https://in.linkedin.com/in/sreedhar-santhosh-a3772b227",
+      image: "/images/Athulyathej.jpeg",
+      linkedin: "https://www.linkedin.com/in/athulyathej-u-40b81637a?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     },
     {
-      name: "Shawn",
+      name: "Abhiram",
       role: "Technical",
-      image: "/images/Shawn.png",
-      linkedin: "https://www.linkedin.com/in/shawn-sabu-790739322",
+      image: "/images/Abhiram.jpeg",
+      linkedin: "http://www.linkedin.com/in/abhiram-a-v,
     },
   ];
 
@@ -239,19 +239,21 @@
 
     <hr class="border-white/10 mb-20 max-w-6xl mx-auto" />
 
-    <!-- Design Team -->
-    <section class="mb-24">
-      <h2 class="text-3xl md:text-4xl font-bold text-white mb-12 text-center">
-        Design Team
-      </h2>
-      <div
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto justify-items-center"
-      >
-        {#each designTeam as member}
-          <ProfileCard {...member} size="medium" />
-        {/each}
-      </div>
+    
+    <!-- Media Team --> 
+    <section class="mb-24"> 
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-12 text-center"> 
+        Media Team 
+      </h2> 
+      <div 
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto justify-items-center" 
+      > 
+        {#each mediaTeam as member} 
+          <ProfileCard {...member} size="medium" /> 
+        {/each} 
+      </div> 
     </section>
+
 
     <hr class="border-white/10 mb-20 max-w-6xl mx-auto" />
 
