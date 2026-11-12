@@ -1,3 +1,4 @@
+
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { API_ENDPOINTS } from "$lib/api";
@@ -34,9 +35,20 @@
   async function getEvents() {
     try {
       const response = await fetch(API_ENDPOINTS.EVENT);
-      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch events");
+      }
+
+      const data: Event[] = await response.json();
+
       events = data;
-      events.map((event) => {
+
+      // Reset arrays before separating events
+      upcomingEvents = [];
+      pastEvents = [];
+
+      events.forEach((event) => {
         if (isUpcoming(event.eventDate)) {
           upcomingEvents.push(event);
         } else {
@@ -52,54 +64,71 @@
     goto("/admin/events/new");
   };
 
-  const handleDelete = async (eventId: string, eventName: string) => {
-  const token = localStorage.getItem("token");
+  const handleDelete = async (
+    eventId: string,
+    eventName: string
+  ) => {
+    const token = localStorage.getItem("token");
 
-  const confirmed = confirm(
-    `Are you sure you want to delete "${eventName}"?`
-  );
+    const confirmed = confirm(
+      `Are you sure you want to delete "${eventName}"?`
+    );
 
-  if (!confirmed) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_ENDPOINTS.EVENT}${eventId}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      const data = await response.json();
-      alert(data.message || "Failed to delete event.");
+    if (!confirmed) {
       return;
     }
 
-    alert("Event deleted successfully!");
+    try {
+      const response = await fetch(
+        `${API_ENDPOINTS.EVENT}${eventId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        }
+      );
 
-    window.location.reload();
-  } catch (error) {
-    console.error("Delete event failed:", error);
-    alert("Failed to delete event.");
-  }
-};
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.message || "Failed to delete event.");
+        return;
+      }
+
+      alert("Event deleted successfully!");
+
+      // Refresh both upcoming and past events
+      await getEvents();
+
+    } catch (error) {
+      console.error("Delete event failed:", error);
+      alert("Failed to delete event.");
+    }
+  };
 
   onMount(() => {
     role.init();
+
     const fetchStatus = async () => {
       isAdmin = $role;
     };
+
     fetchStatus();
+
     if (
-            isAdmin !== "admin" &&
-            isAdmin !== "superadmin"
+      isAdmin !== "admin" &&
+      isAdmin !== "superadmin"
     ) {
       goto("/profile");
+      return;
     }
+
     getEvents();
+
+    return () => {
+      unsubscribe();
+    };
   });
 </script>
 
@@ -109,6 +138,7 @@
 
 <div class="min-h-screen pt-28 pb-16 px-4">
   <div class="container mx-auto space-y-8">
+
     <!-- Header -->
     <div
       class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
@@ -117,7 +147,11 @@
         <p class="text-xs uppercase tracking-[0.3em] text-primary/70 mb-2">
           Admin Panel
         </p>
-        <h1 class="text-3xl md:text-4xl font-bold text-white">Dashboard</h1>
+
+        <h1 class="text-3xl md:text-4xl font-bold text-white">
+          Dashboard
+        </h1>
+
         <p class="text-gray-400 mt-2 max-w-xl text-sm md:text-base">
           Manage events, monitor registrations, and keep track of club activity
           at a glance.
@@ -135,21 +169,24 @@
       </div>
     </div>
 
-    <!-- Stats -->
-
     <!-- Main Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-[2fr_1.4fr] gap-6">
+
       <!-- Upcoming Events -->
       <section
         class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-5 space-y-4"
       >
         <div class="flex items-center justify-between gap-2">
           <div>
-            <h2 class="text-lg font-semibold text-white">Upcoming Events</h2>
+            <h2 class="text-lg font-semibold text-white">
+              Upcoming Events
+            </h2>
+
             <p class="text-gray-400 text-xs mt-1">
               Quick overview of events and their registration status.
             </p>
           </div>
+
           <a
             href="/events"
             class="text-xs text-primary hover:text-primary/80 flex items-center gap-1"
@@ -173,11 +210,13 @@
                   <h3 class="text-sm font-semibold text-white">
                     {event.eventName}
                   </h3>
+
                   <div class="flex flex-wrap gap-2 text-xs text-gray-400">
                     <span class="inline-flex items-center gap-1">
                       <CalendarDays class="w-3 h-3" />
                       {event.eventDate}
                     </span>
+
                     <span
                       class="px-2 py-0.5 rounded-full bg-white/5 border border-white/10"
                     >
@@ -185,6 +224,7 @@
                     </span>
                   </div>
                 </div>
+
                 <div
                   class="flex items-center gap-3 justify-between sm:justify-end w-full sm:w-auto"
                 >
@@ -202,7 +242,8 @@
                   </div>
 
                   <Button
-                    onclick={() => handleDelete(event._id, event.eventName)}
+                    onclick={() =>
+                      handleDelete(event._id, event.eventName)}
                     class="bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 text-xs"
                   >
                     Delete
@@ -213,15 +254,76 @@
           {/if}
         </div>
       </section>
+
     </div>
+
+    <!-- Past Events -->
+    <section
+      class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-5 space-y-4 mt-6"
+    >
+      <div>
+        <h2 class="text-lg font-semibold text-white">
+          Past Events
+        </h2>
+
+        <p class="text-gray-400 text-xs mt-1">
+          Manage previously conducted events.
+        </p>
+      </div>
+
+      <div class="space-y-3">
+        {#if pastEvents.length === 0}
+          <div class="text-sm text-gray-500 py-6 text-center">
+            No past events.
+          </div>
+        {:else}
+          {#each pastEvents as event}
+            <div
+              class="rounded-xl border border-white/10 bg-black/40 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3 hover:border-primary/40 hover:bg-black/60 transition-all"
+            >
+              <div class="flex-1 space-y-1">
+                <h3 class="text-sm font-semibold text-white">
+                  {event.eventName}
+                </h3>
+
+                <div class="flex flex-wrap gap-2 text-xs text-gray-400">
+                  <span class="inline-flex items-center gap-1">
+                    <CalendarDays class="w-3 h-3" />
+                    {event.eventDate}
+                  </span>
+
+                  <span
+                    class="px-2 py-0.5 rounded-full bg-white/5 border border-white/10"
+                  >
+                    {event.eventMode} • {event.eventVenue}
+                  </span>
+                </div>
+              </div>
+
+              <Button
+                onclick={() =>
+                  handleDelete(event._id, event.eventName)}
+                class="bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 text-xs"
+              >
+                Delete
+              </Button>
+            </div>
+          {/each}
+        {/if}
+      </div>
+    </section>
+
+    <!-- Logout -->
     <div class="mt-12">
       <button
         onclick={() => {
           localStorage.removeItem("token");
           localStorage.removeItem("userID");
           localStorage.removeItem("role");
+
           auth.logout();
           role.logout();
+
           window.location.href = "/";
         }}
         class="px-6 py-2 rounded-full bg-red-600/80 hover:bg-red-600 transition text-sm"
@@ -229,5 +331,6 @@
         Logout
       </button>
     </div>
+
   </div>
 </div>
